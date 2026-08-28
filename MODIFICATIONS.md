@@ -26,3 +26,7 @@ The service is already wired to play this file at enabled prayer times. Until th
 - `AzanAudioService` selects the correct bundled MP3 from the prayer type.
 - Removed any synthesized/fallback Azan tone behavior.
 - Existing prayer-specific/global Azan settings remain active.
+
+## Build fix after CI compile error
+- Fixed `IslamicWebViewScreen.kt`: removed invalid nullable assignments to `webViewClient` and `webChromeClient` during disposal. Android WebView's Kotlin API exposes these properties as non-null, so assigning `null` caused `compileDebugKotlin` to fail.
+- WebView cleanup now stops loading and calls `destroy()` without assigning null to non-null WebViewClient/WebChromeClient properties.

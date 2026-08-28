@@ -95,8 +95,6 @@ fun IslamicWebViewScreen(
         onDispose {
             webViewRef?.apply {
                 stopLoading()
-                webViewClient = null
-                webChromeClient = null
                 destroy()
             }
             webViewRef = null
