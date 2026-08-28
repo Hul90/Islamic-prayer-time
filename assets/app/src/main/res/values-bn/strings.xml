@@ -1,0 +1,95 @@
+<resources>
+    <string name="app_name">ইসলামিক নামাজের সময়সূচি</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">হোম</string>
+    <string name="nav_prayer">নামাজ</string>
+    <string name="nav_calendar">ক্যালেন্ডার</string>
+    <string name="nav_tools">সুলতান টুলস</string>
+    <string name="nav_settings">সেটিংস</string>
+
+    <!-- Prayers -->
+    <string name="prayer_fajr">ফজর</string>
+    <string name="prayer_sunrise">সূর্যোদয়</string>
+    <string name="prayer_dhuhr">যোহর</string>
+    <string name="prayer_asr">আসর</string>
+    <string name="prayer_maghrib">মাগরিব</string>
+    <string name="prayer_isha">এশা</string>
+    <string name="prayer_midnight">মধ্যরাত</string>
+    <string name="prayer_sehri">সেহরির শেষ সময়</string>
+    <string name="prayer_iftar">ইফতারের সময়</string>
+    <string name="prayer_tahajjud">তাহাজ্জুদ</string>
+
+    <!-- Statuses -->
+    <string name="status_next">পরবর্তী নামাজ</string>
+    <string name="status_current">বর্তমান ওয়াক্ত</string>
+    <string name="status_passed">অতিক্রান্ত</string>
+    <string name="status_upcoming">আসন্ন</string>
+    <string name="remaining">বাকি আছে</string>
+
+    <!-- Quick Tools & Sultan Tools -->
+    <string name="sultan_tools_title">সুলতান টুলস</string>
+    <string name="sultan_tools_subtitle">মোঃ সুলতান মাহমুদ কর্তৃক প্রস্তুতকৃত ইসলামিক ইউটিলিটি টুলস</string>
+    <string name="tool_qibla">কিবলা কম্পাস</string>
+    <string name="tool_qibla_desc">মক্কার পবিত্র কাবার সঠিক দিক নির্দেশনা</string>
+    <string name="tool_tasbih">ডিজিটাল তাসবিহ</string>
+    <string name="tool_tasbih_desc">বিভিন্ন জিকির, লক্ষ্যমাত্রা ও ভাইব্রেশন সহ ডিজিটাল কাউন্টার</string>
+    <string name="tool_tracker">নামাজ ট্র্যাকার</string>
+    <string name="tool_tracker_desc">আপনার প্রতিদিনের ৫ ওয়াক্ত নামাজের হিসেব রাখুন</string>
+    <string name="tool_date_converter">তারিখ কনভার্টার</string>
+    <string name="tool_date_converter_desc">ইংরেজি, হিজরি ও বাংলা সন ও তারিখ রূপান্তর</string>
+    <string name="tool_zakat">যাকাত ক্যালকুলেটর</string>
+    <string name="tool_zakat_desc">সোনা, রূপা, নগদ অর্থ ও সম্পদের যাকাত হিসাব</string>
+    <string name="tool_dhikr_timer">জিকির টাইমার</string>
+    <string name="tool_dhikr_timer_desc">নির্দিষ্ট সময়ের জিকির ও ধ্যানের টাইমার</string>
+    <string name="tool_mosque">নিকটস্থ মসজিদ</string>
+    <string name="tool_mosque_desc">আপনার আশেপাশের মসজিদসমূহ খুঁজে নিন</string>
+
+    <!-- Ramadan Mode -->
+    <string name="ramadan_mode_title">রমজান মোড</string>
+    <string name="sehri_countdown">সেহরি শেষ হতে বাকি</string>
+    <string name="iftar_countdown">ইফতার হতে বাকি</string>
+    <string name="sehri_end">সেহরি শেষ</string>
+    <string name="iftar_start">ইফতার</string>
+    <string name="fasting_tracker">রোজার ট্র্যাকার</string>
+    <string name="fasted_today">আমি আজ রোজা রেখেছি</string>
+
+    <!-- Location -->
+    <string name="location_title">লোকেশন</string>
+    <string name="location_auto">অটো ডিটেক্ট (জিপিএস)</string>
+    <string name="location_manual">জেলা / শহর নির্বাচন করুন</string>
+    <string name="location_permission_needed">নামাজের সঠিক সময় ও কিবলা নির্ণয়ের জন্য লোকেশন পারমিশন প্রয়োজন।</string>
+    <string name="enable_gps_prompt">সঠিক সময়ের জন্য আপনার ডিভাইসের GPS চালু করুন।</string>
+    <string name="refresh_location">লোকেশন রিফ্রেশ করুন</string>
+
+    <!-- Notification & Azan -->
+    <string name="notification_title">নামাজের ওয়াক্ত হয়েছে</string>
+    <string name="azan_audio_playing">%1$s ওয়াক্তের আজান চলছে</string>
+    <string name="action_stop_azan">আজান বন্ধ করুন</string>
+    <string name="action_mute">মিউট</string>
+    <string name="notification_channel_prayer">নামাজের নোটিফিকেশন</string>
+    <string name="notification_channel_azan">আজান অডিও</string>
+    <string name="notification_channel_general">সাধারণ বার্তা</string>
+
+    <!-- About Section -->
+    <string name="about_title">অ্যাপ সম্পর্কে</string>
+    <string name="about_app_name">ইসলামিক নামাজের সময়সূচি</string>
+    <string name="about_version">সংস্করণ ১.০.০ (রিলিজ বিল্ড)</string>
+    <string name="about_dev_name">মোঃ সুলতান মাহমুদ (MD SULTAN MAHAMUD)</string>
+    <string name="about_email">sultanmahamud5497@gmail.com</string>
+    <string name="about_phone">০১৭৪০-২৩৬৩৮৪</string>
+    <string name="about_contact_email">ইমেইল করুন</string>
+    <string name="about_contact_call">সরাসরি কল করুন</string>
+    <string name="about_description">একটি সম্পূর্ণ অফলাইন ও আধুনিক ইসলামিক অ্যাপ। এতে রয়েছে নিখুঁত নামাজের সময় হিসাব, বাংলাদেশ সরকারি ছুটির তালিকা, বাংলা ও হিজরি ক্যালেন্ডার, কিবলা কম্পাস ও আজান নোটিফিকেশন।</string>
+    <string name="about_privacy_title">গোপনীয়তা নীতি</string>
+    <string name="about_privacy_desc">আপনার লোকেশন ও নামাজের তথ্য সম্পূর্ণ ডিভাইসে সংরক্ষিত থাকে। কোনো ব্যক্তিগত তথ্য ইন্টারনেটে পাঠানো বা বিক্রি করা হয় না।</string>
+
+    <!-- Actions -->
+    <string name="btn_save">সংরক্ষণ করুন</string>
+    <string name="btn_cancel">বাতিল</string>
+    <string name="btn_reset">রিসেট</string>
+    <string name="btn_get_started">শুরু করুন</string>
+    <string name="btn_skip">এড়িয়ে যান</string>
+    <string name="btn_grant_permission">অনুমতি দিন</string>
+    <string name="btn_continue">পরবর্তী</string>
+</resources>
