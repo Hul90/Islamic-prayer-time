@@ -1,0 +1,6 @@
+{
+  "name": "Islamic Prayer Time",
+  "description": "Accurate Islamic Prayer Times, Azan notifications, Qibla compass, Tasbih, Ramadan timings, Bangla and Hijri calendars, and Bangladesh government holidays by MD SULTAN MAHAMUD.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

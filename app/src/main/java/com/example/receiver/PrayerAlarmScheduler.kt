@@ -1,0 +1,144 @@
+package com.example.receiver
+
+import android.annotation.SuppressLint
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import com.example.calculation.PrayerTimeEngine
+import com.example.model.AppLanguage
+import com.example.model.LocationData
+import com.example.model.PrayerSettings
+import com.example.model.PrayerType
+import com.example.notification.PrayerNotificationManager
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
+
+class PrayerAlarmScheduler(private val context: Context) {
+
+    private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+    @SuppressLint("ScheduleExactAlarm")
+    fun scheduleAlarmsForTodayAndTomorrow(
+        location: LocationData,
+        settings: PrayerSettings
+    ) {
+        cancelAllAlarms()
+
+        if (!settings.isAzanGloballyEnabled) {
+            return
+        }
+
+        val today = LocalDate.now()
+        val tomorrow = today.plusDays(1)
+
+        scheduleDayPrayers(today, location, settings, isToday = true)
+        scheduleDayPrayers(tomorrow, location, settings, isToday = false)
+    }
+
+    private fun scheduleDayPrayers(
+        date: LocalDate,
+        location: LocationData,
+        settings: PrayerSettings,
+        isToday: Boolean
+    ) {
+        val prayerTimes = PrayerTimeEngine.calculatePrayerTimes(date, location, settings)
+        val now = LocalDateTime.now()
+        val zoneId = try {
+            ZoneId.of(location.timeZoneId)
+        } catch (_: Exception) {
+            ZoneId.systemDefault()
+        }
+
+        val prayers = listOf(
+            Pair(PrayerType.FAJR, prayerTimes.fajr),
+            Pair(PrayerType.DHUHR, prayerTimes.dhuhr),
+            Pair(PrayerType.ASR, prayerTimes.asr),
+            Pair(PrayerType.MAGHRIB, prayerTimes.maghrib),
+            Pair(PrayerType.ISHA, prayerTimes.isha)
+        )
+
+        for ((type, time) in prayers) {
+            // Check if user has enabled alarm for this specific prayer
+            val isEnabled = when (type) {
+                PrayerType.FAJR -> settings.fajrAzan
+                PrayerType.DHUHR -> settings.dhuhrAzan
+                PrayerType.ASR -> settings.asrAzan
+                PrayerType.MAGHRIB -> settings.maghribAzan
+                PrayerType.ISHA -> settings.ishaAzan
+                else -> false
+            }
+
+            if (!isEnabled) continue
+
+            val prayerDateTime = LocalDateTime.of(date, time)
+            if (prayerDateTime.isBefore(now)) continue // Already passed
+
+            val epochMillis = prayerDateTime.atZone(zoneId).toInstant().toEpochMilli()
+            val requestCode = getRequestCode(type, isToday)
+
+            val intent = Intent(context, PrayerAlarmReceiver::class.java).apply {
+                action = PrayerNotificationManager.ACTION_PRAYER_ALARM
+                putExtra(PrayerNotificationManager.EXTRA_PRAYER_TYPE, type.id)
+                putExtra(PrayerNotificationManager.EXTRA_PRAYER_TIME, time.toString())
+                putExtra(PrayerNotificationManager.EXTRA_LOCATION_NAME, location.displayLocation(settings.language == AppLanguage.BANGLA))
+                putExtra(PrayerNotificationManager.EXTRA_ASR_METHOD, if (settings.language == AppLanguage.BANGLA) settings.asrMethod.nameBn else "${settings.asrMethod.nameEn} calculation")
+            }
+
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                requestCode,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        epochMillis,
+                        pendingIntent
+                    )
+                } else {
+                    alarmManager.setExact(
+                        AlarmManager.RTC_WAKEUP,
+                        epochMillis,
+                        pendingIntent
+                    )
+                }
+            } catch (e: SecurityException) {
+                // If exact alarm permission is restricted, fallback gracefully
+                alarmManager.set(
+                    AlarmManager.RTC_WAKEUP,
+                    epochMillis,
+                    pendingIntent
+                )
+            }
+        }
+    }
+
+    fun cancelAllAlarms() {
+        for (isToday in listOf(true, false)) {
+            for (type in PrayerType.entries) {
+                val requestCode = getRequestCode(type, isToday)
+                val intent = Intent(context, PrayerAlarmReceiver::class.java)
+                val pendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    requestCode,
+                    intent,
+                    PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+                )
+                if (pendingIntent != null) {
+                    alarmManager.cancel(pendingIntent)
+                }
+            }
+        }
+    }
+
+    private fun getRequestCode(prayerType: PrayerType, isToday: Boolean): Int {
+        val base = prayerType.ordinal * 10
+        return if (isToday) base else base + 100
+    }
+}

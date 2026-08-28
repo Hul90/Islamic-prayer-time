@@ -1,0 +1,95 @@
+<resources>
+    <string name="app_name">Islamic Prayer Time</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_prayer">Prayer</string>
+    <string name="nav_calendar">Calendar</string>
+    <string name="nav_tools">Sultan Tools</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Prayers -->
+    <string name="prayer_fajr">Fajr</string>
+    <string name="prayer_sunrise">Sunrise</string>
+    <string name="prayer_dhuhr">Dhuhr</string>
+    <string name="prayer_asr">Asr</string>
+    <string name="prayer_maghrib">Maghrib</string>
+    <string name="prayer_isha">Isha</string>
+    <string name="prayer_midnight">Midnight</string>
+    <string name="prayer_sehri">Sehri Ends</string>
+    <string name="prayer_iftar">Iftar Time</string>
+    <string name="prayer_tahajjud">Tahajjud</string>
+
+    <!-- Statuses -->
+    <string name="status_next">Next Prayer</string>
+    <string name="status_current">Current Prayer</string>
+    <string name="status_passed">Passed</string>
+    <string name="status_upcoming">Upcoming</string>
+    <string name="remaining">remaining</string>
+
+    <!-- Quick Tools & Sultan Tools -->
+    <string name="sultan_tools_title">Sultan Tools</string>
+    <string name="sultan_tools_subtitle">Complete Islamic utilities suite by MD SULTAN MAHAMUD</string>
+    <string name="tool_qibla">Qibla Finder</string>
+    <string name="tool_qibla_desc">Accurate compass pointing to Kaaba in Makkah</string>
+    <string name="tool_tasbih">Digital Tasbih</string>
+    <string name="tool_tasbih_desc">Tap counter with dhikr presets, target &amp; vibration</string>
+    <string name="tool_tracker">Prayer Tracker</string>
+    <string name="tool_tracker_desc">Record and track your 5 daily prayers</string>
+    <string name="tool_date_converter">Date Converter</string>
+    <string name="tool_date_converter_desc">Convert Gregorian, Hijri, and Bangla dates</string>
+    <string name="tool_zakat">Zakat Calculator</string>
+    <string name="tool_zakat_desc">Educational Zakat estimator on gold, cash &amp; wealth</string>
+    <string name="tool_dhikr_timer">Dhikr Timer</string>
+    <string name="tool_dhikr_timer_desc">Timed meditation and remembrance sessions</string>
+    <string name="tool_mosque">Nearby Mosques</string>
+    <string name="tool_mosque_desc">Find local mosques using your device location</string>
+
+    <!-- Ramadan Mode -->
+    <string name="ramadan_mode_title">Ramadan Mode</string>
+    <string name="sehri_countdown">Time left for Sehri</string>
+    <string name="iftar_countdown">Time left for Iftar</string>
+    <string name="sehri_end">Sehri End</string>
+    <string name="iftar_start">Iftar</string>
+    <string name="fasting_tracker">Fasting Status</string>
+    <string name="fasted_today">I am fasting today</string>
+
+    <!-- Location -->
+    <string name="location_title">Location</string>
+    <string name="location_auto">Auto Detect (GPS)</string>
+    <string name="location_manual">Select City / District</string>
+    <string name="location_permission_needed">Location access is required to compute precise solar angles and Qibla direction.</string>
+    <string name="enable_gps_prompt">Please enable GPS on your device for accurate prayer times.</string>
+    <string name="refresh_location">Refresh Location</string>
+
+    <!-- Notification & Azan -->
+    <string name="notification_title">Prayer Notification</string>
+    <string name="azan_audio_playing">Azan is playing for %1$s</string>
+    <string name="action_stop_azan">Stop Azan</string>
+    <string name="action_mute">Mute</string>
+    <string name="notification_channel_prayer">Prayer Notifications</string>
+    <string name="notification_channel_azan">Azan Audio</string>
+    <string name="notification_channel_general">General Updates</string>
+
+    <!-- About Section -->
+    <string name="about_title">About</string>
+    <string name="about_app_name">Islamic Prayer Time</string>
+    <string name="about_version">Version 1.0.0 (Build Release)</string>
+    <string name="about_dev_name">MD SULTAN MAHAMUD</string>
+    <string name="about_email">sultanmahamud5497@gmail.com</string>
+    <string name="about_phone">01740-236384</string>
+    <string name="about_contact_email">Email Developer</string>
+    <string name="about_contact_call">Call Developer</string>
+    <string name="about_description">A comprehensive, offline-first Islamic companion crafted with precision. Features accurate astronomical calculations, Bangladesh Government holidays, Bangla and Hijri calendars, Qibla compass, and full Azan alerts.</string>
+    <string name="about_privacy_title">Privacy Guarantee</string>
+    <string name="about_privacy_desc">All location calculations and prayer tracking logs are processed 100% locally on your device. We do not transmit or sell your personal information.</string>
+
+    <!-- Actions -->
+    <string name="btn_save">Save</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_reset">Reset</string>
+    <string name="btn_get_started">Get Started</string>
+    <string name="btn_skip">Skip</string>
+    <string name="btn_grant_permission">Grant Permission</string>
+    <string name="btn_continue">Continue</string>
+</resources>
