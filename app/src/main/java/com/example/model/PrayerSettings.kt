@@ -147,7 +147,7 @@ enum class AzanSoundType(
     val titleEn: String,
     val titleBn: String
 ) {
-    FULL_AZAN("full_azan", "Melodic Azan", "সুরময় আজান"),
+    FULL_AZAN("full_azan", "Azan MP3", "আজান MP3"),
     SHORT_BEEP("short_beep", "Soft Chime", "মৃদু শব্দ"),
     SILENT("silent", "Silent", "নীরব");
 

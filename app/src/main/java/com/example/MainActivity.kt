@@ -327,8 +327,17 @@ fun MainAppContent(
             }
 
             composable(Screen.Duas.route) {
-                DuasScreen(
-                    isBangla = isBangla,
+                IslamicWebViewScreen(
+                    title = if (isBangla) "সকল দোয়া ও যিকির — সূচিপত্র" else "All Duas & Zikr — Contents",
+                    url = if (isBangla) "https://dua.gtaf.org/" else "https://dua.gtaf.org/en/",
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.Quran.route) {
+                IslamicWebViewScreen(
+                    title = if (isBangla) "আল কুরআন" else "AL QURAN",
+                    url = "https://www.hadithbd.com/quran/",
                     onBack = { navController.popBackStack() }
                 )
             }

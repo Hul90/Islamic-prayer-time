@@ -3,9 +3,9 @@ package com.example.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Vibrator
-import android.os.VibrationEffect
 import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import com.example.IslamicPrayerApplication
 import com.example.model.AppLanguage
 import com.example.model.AzanSoundType
@@ -18,28 +18,34 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class PrayerAlarmReceiver : BroadcastReceiver() {
-
     override fun onReceive(context: Context, intent: Intent?) {
         val action = intent?.action ?: return
-        val app = context.applicationContext as? IslamicPrayerApplication ?: return
 
         if (action == PrayerNotificationManager.ACTION_STOP_AZAN) {
             AzanAudioService.stopAzan(context)
             return
         }
 
-        if (action == PrayerNotificationManager.ACTION_PRAYER_ALARM) {
-            val prayerTypeId = intent.getStringExtra(PrayerNotificationManager.EXTRA_PRAYER_TYPE) ?: PrayerType.FAJR.id
-            val prayerType = PrayerType.fromId(prayerTypeId)
-            val prayerTime = intent.getStringExtra(PrayerNotificationManager.EXTRA_PRAYER_TIME) ?: ""
-            val locationName = intent.getStringExtra(PrayerNotificationManager.EXTRA_LOCATION_NAME) ?: ""
-            val asrMethodName = intent.getStringExtra(PrayerNotificationManager.EXTRA_ASR_METHOD) ?: ""
+        if (action != PrayerNotificationManager.ACTION_PRAYER_ALARM) return
 
-            CoroutineScope(Dispatchers.Default).launch {
+        val pendingResult = goAsync()
+        val app = context.applicationContext as? IslamicPrayerApplication
+        if (app == null) {
+            pendingResult.finish()
+            return
+        }
+
+        val prayerTypeId = intent.getStringExtra(PrayerNotificationManager.EXTRA_PRAYER_TYPE) ?: PrayerType.FAJR.id
+        val prayerType = PrayerType.fromId(prayerTypeId)
+        val prayerTime = intent.getStringExtra(PrayerNotificationManager.EXTRA_PRAYER_TIME) ?: ""
+        val locationName = intent.getStringExtra(PrayerNotificationManager.EXTRA_LOCATION_NAME) ?: ""
+        val asrMethodName = intent.getStringExtra(PrayerNotificationManager.EXTRA_ASR_METHOD) ?: ""
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
                 val settings = app.settingsRepository.settingsFlow.first()
                 val isBangla = settings.language == AppLanguage.BANGLA
 
-                // Handle vibration
                 if (settings.isVibrationEnabled) {
                     try {
                         val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
@@ -49,12 +55,10 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
                             @Suppress("DEPRECATION")
                             vibrator?.vibrate(longArrayOf(0, 500, 200, 500), -1)
                         }
-                    } catch (_: Exception) {}
+                    } catch (_: Exception) { }
                 }
 
                 val isAzanPlaying = settings.azanSoundType != AzanSoundType.SILENT
-
-                // Show notification
                 app.notificationManager.showPrayerNotification(
                     prayerType = prayerType,
                     prayerTimeStr = prayerTime,
@@ -64,7 +68,6 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
                     asrMethodName = asrMethodName
                 )
 
-                // Start Azan Audio if sound is enabled
                 if (isAzanPlaying) {
                     AzanAudioService.startAzan(
                         context = context,
@@ -75,9 +78,10 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
                     )
                 }
 
-                // Reschedule for next rolling days
                 val location = app.settingsRepository.savedLocationFlow.first()
                 app.alarmScheduler.scheduleAlarmsForTodayAndTomorrow(location, settings)
+            } finally {
+                pendingResult.finish()
             }
         }
     }

@@ -3,11 +3,11 @@ package com.example.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // Islamic Emerald & Gold Palette
-val IslamicEmeraldPrimary = Color(0xFF0F5132)
+val IslamicEmeraldPrimary = Color(0xFFF1D779)
 val IslamicEmeraldDark = Color(0xFF082819)
 val IslamicGold = Color(0xFFD4AF37)
 val IslamicGoldLight = Color(0xFFF1D779)
-val IslamicGoldDark = Color(0xFFA67C1E)
+val IslamicGoldDark = Color(0xFFE6C85C)
 
 val EmeraldContainerLight = Color(0xFFE0F2E9)
 val OnEmeraldContainerLight = Color(0xFF052B19)
@@ -25,4 +25,4 @@ val IslamicCardDark = Color(0xFF1A2620)
 
 val IslamicAccentGreen = Color(0xFF2E8B57)
 val IslamicAccentCyan = Color(0xFF20B2AA)
-val IslamicMutedText = Color(0xFF6E7E75)
+val IslamicMutedText = Color(0xFFE8D98A)

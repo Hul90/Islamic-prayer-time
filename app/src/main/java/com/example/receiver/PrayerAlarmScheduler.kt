@@ -31,7 +31,12 @@ class PrayerAlarmScheduler(private val context: Context) {
             return
         }
 
-        val today = LocalDate.now()
+        val zoneId = try {
+            ZoneId.of(location.timeZoneId)
+        } catch (_: Exception) {
+            ZoneId.systemDefault()
+        }
+        val today = LocalDate.now(zoneId)
         val tomorrow = today.plusDays(1)
 
         scheduleDayPrayers(today, location, settings, isToday = true)
@@ -45,12 +50,12 @@ class PrayerAlarmScheduler(private val context: Context) {
         isToday: Boolean
     ) {
         val prayerTimes = PrayerTimeEngine.calculatePrayerTimes(date, location, settings)
-        val now = LocalDateTime.now()
         val zoneId = try {
             ZoneId.of(location.timeZoneId)
         } catch (_: Exception) {
             ZoneId.systemDefault()
         }
+        val now = LocalDateTime.now(zoneId)
 
         val prayers = listOf(
             Pair(PrayerType.FAJR, prayerTimes.fajr),
@@ -95,26 +100,26 @@ class PrayerAlarmScheduler(private val context: Context) {
             )
 
             try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    alarmManager.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        epochMillis,
-                        pendingIntent
-                    )
+                val canUseExact = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    alarmManager.canScheduleExactAlarms()
                 } else {
-                    alarmManager.setExact(
-                        AlarmManager.RTC_WAKEUP,
-                        epochMillis,
-                        pendingIntent
-                    )
+                    true
                 }
-            } catch (e: SecurityException) {
-                // If exact alarm permission is restricted, fallback gracefully
-                alarmManager.set(
-                    AlarmManager.RTC_WAKEUP,
-                    epochMillis,
-                    pendingIntent
-                )
+                if (canUseExact) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        alarmManager.setExactAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            epochMillis,
+                            pendingIntent
+                        )
+                    } else {
+                        alarmManager.setExact(AlarmManager.RTC_WAKEUP, epochMillis, pendingIntent)
+                    }
+                } else {
+                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, epochMillis, pendingIntent)
+                }
+            } catch (_: SecurityException) {
+                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, epochMillis, pendingIntent)
             }
         }
     }

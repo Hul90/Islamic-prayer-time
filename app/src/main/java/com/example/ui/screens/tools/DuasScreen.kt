@@ -504,7 +504,7 @@ private fun DuaCard(dua: DuaItem, isBangla: Boolean) {
                     text = dua.arabicText,
                     style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
                     fontWeight = FontWeight.Bold,
-                    color = IslamicEmeraldDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(12.dp)
                 )

@@ -13,7 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
     primary = IslamicGoldLight,
-    onPrimary = IslamicEmeraldDark,
+    onPrimary = Color.Black,
     primaryContainer = EmeraldContainerDark,
     onPrimaryContainer = OnEmeraldContainerDark,
     secondary = IslamicGold,
@@ -22,18 +22,18 @@ private val DarkColorScheme = darkColorScheme(
     background = IslamicBackgroundDark,
     surface = IslamicSurfaceDark,
     surfaceVariant = IslamicCardDark,
-    onBackground = Color(0xFFE8ECE9),
-    onSurface = Color(0xFFE8ECE9),
+    onBackground = IslamicGoldLight,
+    onSurface = IslamicGoldLight,
     outline = Color(0xFF3B4D43)
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = IslamicEmeraldPrimary,
-    onPrimary = Color.White,
+    onPrimary = Color.Black,
     primaryContainer = EmeraldContainerLight,
     onPrimaryContainer = OnEmeraldContainerLight,
     secondary = IslamicGoldDark,
-    onSecondary = Color.White,
+    onSecondary = Color.Black,
     tertiary = IslamicAccentGreen,
     background = IslamicBackgroundLight,
     surface = IslamicSurfaceLight,

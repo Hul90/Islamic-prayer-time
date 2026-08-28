@@ -52,13 +52,23 @@ fun SultanToolsScreen(
         ),
         SultanToolMenuItem(
             "duas",
-            "16 Categories Authentic Duas",
-            "১৬টি বিষয়ের সহীহ দোয়া ভাণ্ডার",
-            "Authentic daily duas with Arabic, pronunciation and meaning",
-            "ঘুম, ওযু, সফর, ইফতার সহ প্রয়োজনীয় সহীহ দোয়া",
+            "All Duas & Zikr — Contents",
+            "সকল দোয়া ও যিকির — সূচিপত্র",
+            "Complete Dua & Zikr index with Arabic, Bangla and English",
+            "হিসনুল মুসলিমের সম্পূর্ণ দোয়া ও যিকিরের সূচিপত্র",
             Icons.Default.VolunteerActivism,
             "tool_duas",
             IslamicGoldDark
+        ),
+        SultanToolMenuItem(
+            "quran",
+            "AL QURAN",
+            "আল কুরআন",
+            "Read the Quran with Arabic text and Bangla translation",
+            "আরবি কুরআন ও বাংলা অনুবাদ পড়ুন",
+            Icons.Default.MenuBook,
+            "tool_quran",
+            IslamicEmeraldPrimary
         ),
         SultanToolMenuItem(
             "qibla",

@@ -225,7 +225,7 @@ fun AboutScreen(
                         "📿 ডিজিটাল তাসবিহ ও দৈনিক ৫ ওয়াক্ত নামাজ ট্র্যাকার।"
                     ) else listOf(
                         "🔒 100% Offline-First - All astronomical calculations done on-device.",
-                        "🕌 Melodic Azan audio push notifications & alarm manager.",
+                        "🕌 User-provided Azan MP3 playback at prayer time with alarm notifications.",
                         "🧭 Real-time sensory Qibla compass & distance to Kaaba.",
                         "📅 3-in-1 Unified Calendar (Gregorian, Bangla, Hijri) + National Holidays.",
                         "📿 Digital Tasbih & Daily 5-Prayer habit tracker."
