@@ -12,41 +12,43 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = IslamicGoldLight,
-    onPrimary = Color.Black,
+    primary = IslamicGold,
+    onPrimary = Color(0xFF17130A),
     primaryContainer = EmeraldContainerDark,
     onPrimaryContainer = OnEmeraldContainerDark,
-    secondary = IslamicGold,
-    onSecondary = Color.Black,
+    secondary = IslamicGoldLight,
+    onSecondary = Color(0xFF17130A),
     tertiary = IslamicAccentCyan,
     background = IslamicBackgroundDark,
     surface = IslamicSurfaceDark,
     surfaceVariant = IslamicCardDark,
-    onBackground = IslamicGoldLight,
-    onSurface = IslamicGoldLight,
-    outline = Color(0xFF3B4D43)
+    onBackground = IslamicTextLight,
+    onSurface = IslamicTextLight,
+    onSurfaceVariant = IslamicMutedText,
+    outline = Color(0xFF42564B)
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = IslamicEmeraldPrimary,
-    onPrimary = Color.Black,
+    primary = IslamicEmeraldDark,
+    onPrimary = Color.White,
     primaryContainer = EmeraldContainerLight,
     onPrimaryContainer = OnEmeraldContainerLight,
     secondary = IslamicGoldDark,
-    onSecondary = Color.Black,
+    onSecondary = Color(0xFF17130A),
     tertiary = IslamicAccentGreen,
     background = IslamicBackgroundLight,
     surface = IslamicSurfaceLight,
     surfaceVariant = IslamicCardLight,
-    onBackground = Color(0xFF131D18),
-    onSurface = Color(0xFF131D18),
+    onBackground = IslamicTextDark,
+    onSurface = IslamicTextDark,
+    onSurfaceVariant = Color(0xFF58675E),
     outline = Color(0xFFD0DCD5)
 )
 
 @Composable
 fun IslamicPrayerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // Keep distinctive Islamic brand palette by default
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

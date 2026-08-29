@@ -21,5 +21,6 @@ sealed class Screen(val route: String, val titleEn: String, val titleBn: String)
     data object PrayerCalculationDetails : Screen("prayer_calculation_details", "Calculation Details", "গণনার বিবরণ")
     data object NamazLearning : Screen("tool_namaz_learning", "Namaz Guide", "নামাজ শিক্ষা")
     data object Duas : Screen("tool_duas", "Duas & Zikr", "সকল দোয়া ও যিকির")
+    data object OfflineDuas : Screen("tool_offline_duas", "Practical Daily Duas", "প্রতিদিনের ব্যবহারিক দোয়া")
     data object Quran : Screen("tool_quran", "AL QURAN", "আল কুরআন")
 }

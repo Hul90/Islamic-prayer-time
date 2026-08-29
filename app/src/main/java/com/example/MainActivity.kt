@@ -334,6 +334,13 @@ fun MainAppContent(
                 )
             }
 
+            composable(Screen.OfflineDuas.route) {
+                OfflineDuasScreen(
+                    isBangla = isBangla,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
             composable(Screen.Quran.route) {
                 IslamicWebViewScreen(
                     title = if (isBangla) "আল কুরআন" else "AL QURAN",

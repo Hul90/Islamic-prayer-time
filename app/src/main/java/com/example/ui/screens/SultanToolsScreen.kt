@@ -61,6 +61,16 @@ fun SultanToolsScreen(
             IslamicGoldDark
         ),
         SultanToolMenuItem(
+            "offline_daily_duas",
+            "Practical Daily Duas",
+            "প্রতিদিনের ব্যবহারিক দোয়া",
+            "Native offline dua reader with 160+ dua sections",
+            "ইন্টারনেট ছাড়াই পড়ার জন্য অ্যাপের ভিতরে সংরক্ষিত ১৬০+ দোয়া ও অধ্যায়",
+            Icons.Default.Bookmark,
+            "tool_offline_duas",
+            IslamicGoldDark
+        ),
+        SultanToolMenuItem(
             "quran",
             "AL QURAN",
             "আল কুরআন",

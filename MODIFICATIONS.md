@@ -30,3 +30,9 @@ The service is already wired to play this file at enabled prayer times. Until th
 ## Build fix after CI compile error
 - Fixed `IslamicWebViewScreen.kt`: removed invalid nullable assignments to `webViewClient` and `webChromeClient` during disposal. Android WebView's Kotlin API exposes these properties as non-null, so assigning `null` caused `compileDebugKotlin` to fail.
 - WebView cleanup now stops loading and calls `destroy()` without assigning null to non-null WebViewClient/WebChromeClient properties.
+
+## Offline Daily Duas
+- Added `প্রতিদিনের ব্যবহারিক দোয়া` / `Practical Daily Duas` as a new Sultan Islamic Tools option.
+- Bundled the user-provided dua archive into `app/src/main/assets/dua_offline/` as offline HTML pages plus `index.json`.
+- Added offline search and a clean Arabic/Bangla reading view.
+- Existing online `All Duas & Zikr` and online Quran options are unchanged.
