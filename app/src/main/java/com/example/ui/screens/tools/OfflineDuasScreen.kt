@@ -7,14 +7,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.TextDecrease
 import androidx.compose.material.icons.filled.TextIncrease
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +34,7 @@ private val ReaderArabic = Color(0xFFF4E8C1)
 private val ReaderBody = Color(0xFFE4EAE5)
 private val ReaderSecondary = Color(0xFFB9C9BE)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OfflineDuasScreen(
     isBangla: Boolean,
@@ -40,40 +43,47 @@ fun OfflineDuasScreen(
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val offlineDuas = remember(context) { loadOfflineDuas(context) }
-    var selected by remember { mutableStateOf<OfflineDuaItem?>(null) }
-    var query by rememberSaveable { mutableStateOf("") }
+    var selectedDua by remember { mutableStateOf<OfflineDuaItem?>(null) }
+    var searchText by remember { mutableStateOf("") }
 
+    val selected = selectedDua
     if (selected != null) {
         OfflineDuaDetailScreen(
-            item = selected!!,
+            item = selected,
             isBangla = isBangla,
-            onBack = { selected = null }
+            onBack = { selectedDua = null }
         )
         return
     }
 
-    val filtered = remember(query) {
-        val q = query.trim().lowercase()
-        if (q.isEmpty()) offlineDuas
-        else offlineDuas.filter {
-            it.title.lowercase().contains(q) || it.id.toString() == q ||
-                it.blocks.any { block -> block.text.lowercase().contains(q) }
+    val search = searchText.trim().lowercase()
+    val filteredDuas = remember(offlineDuas, search) {
+        if (search.isEmpty()) {
+            offlineDuas
+        } else {
+            offlineDuas.filter { dua ->
+                dua.title.lowercase().contains(search) ||
+                    dua.id.toString() == search ||
+                    dua.blocks.any { block -> block.text.lowercase().contains(search) }
+            }
         }
     }
 
     Column(
-        modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
     ) {
         TopAppBar(
             title = {
                 Column {
                     Text(
-                        if (isBangla) "প্রতিদিনের ব্যবহারিক দোয়া" else "Practical Daily Duas",
+                        text = if (isBangla) "প্রতিদিনের ব্যবহারিক দোয়া" else "Practical Daily Duas",
                         fontWeight = FontWeight.Bold,
                         color = IslamicGold
                     )
                     Text(
-                        if (isBangla) "সম্পূর্ণ অফলাইন • ইন্টারনেট ছাড়াই পড়ুন" else "Fully offline • No internet required",
+                        text = if (isBangla) "সম্পূর্ণ অফলাইন • ইন্টারনেট ছাড়াই পড়ুন" else "Fully offline • No internet required",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -81,19 +91,30 @@ fun OfflineDuasScreen(
             },
             navigationIcon = {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = if (isBangla) "ফিরে যান" else "Back")
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = if (isBangla) "ফিরে যান" else "Back"
+                    )
                 }
             }
         )
 
         OutlinedTextField(
-            value = query,
-            onValueChange = { query = it },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            value = searchText,
+            onValueChange = { newValue -> searchText = newValue },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             singleLine = true,
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-            label = { Text(if (isBangla) "দোয়া খুঁজুন" else "Search duas") },
-            placeholder = { Text(if (isBangla) "যেমন: ঘুম, নামাজ, সফর..." else "e.g. sleep, prayer, travel...") },
+            leadingIcon = {
+                Icon(Icons.Default.Search, contentDescription = null)
+            },
+            label = {
+                Text(if (isBangla) "দোয়া খুঁজুন" else "Search duas")
+            },
+            placeholder = {
+                Text(if (isBangla) "যেমন: ঘুম, নামাজ, সফর..." else "e.g. sleep, prayer, travel...")
+            },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = IslamicGold,
                 focusedLabelColor = IslamicGold,
@@ -102,7 +123,7 @@ fun OfflineDuasScreen(
         )
 
         Text(
-            text = if (isBangla) "${filtered.size}টি দোয়া/অধ্যায়" else "${filtered.size} duas/chapters",
+            text = if (isBangla) "${filteredDuas.size}টি দোয়া/অধ্যায়" else "${filteredDuas.size} duas/chapters",
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
             color = IslamicGold,
             fontWeight = FontWeight.SemiBold
@@ -113,13 +134,23 @@ fun OfflineDuasScreen(
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
             verticalArrangement = Arrangement.spacedBy(9.dp)
         ) {
-            items(filtered, key = { it.id }) { item ->
+            items(
+                items = filteredDuas,
+                key = { dua -> dua.id }
+            ) { dua ->
                 Card(
-                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable { selected = item },
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable { selectedDua = dua },
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(15.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(15.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Surface(
@@ -128,12 +159,16 @@ fun OfflineDuasScreen(
                             color = IslamicAccentGreen.copy(alpha = 0.20f)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                Text("${item.id}", color = IslamicGold, fontWeight = FontWeight.Bold)
+                                Text(
+                                    text = dua.id.toString(),
+                                    color = IslamicGold,
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
                         }
                         Spacer(Modifier.width(14.dp))
                         Text(
-                            item.title,
+                            text = dua.title,
                             modifier = Modifier.weight(1f),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
@@ -153,28 +188,47 @@ private fun OfflineDuaDetailScreen(
     isBangla: Boolean,
     onBack: () -> Unit
 ) {
-    var fontScale by rememberSaveable { mutableFloatStateOf(1f) }
+    var fontScale by remember { mutableStateOf(1f) }
 
-    Column(Modifier.fillMaxSize().background(ReaderSurface)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(ReaderSurface)
+    ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = if (isBangla) "ফিরে যান" else "Back", tint = ReaderBody)
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = if (isBangla) "ফিরে যান" else "Back",
+                    tint = ReaderBody
+                )
             }
             Column(modifier = Modifier.weight(1f)) {
-                Text(item.title, fontWeight = FontWeight.Bold, color = ReaderBody, maxLines = 2)
                 Text(
-                    if (isBangla) "অফলাইন দোয়া • ${item.id}" else "Offline Dua • ${item.id}",
+                    text = item.title,
+                    fontWeight = FontWeight.Bold,
+                    color = ReaderBody,
+                    maxLines = 2
+                )
+                Text(
+                    text = if (isBangla) "অফলাইন দোয়া • ${item.id}" else "Offline Dua • ${item.id}",
                     fontSize = 12.sp,
                     color = ReaderSecondary
                 )
             }
-            IconButton(onClick = { fontScale = (fontScale - 0.1f).coerceAtLeast(0.8f) }) {
+            IconButton(
+                onClick = { fontScale = (fontScale - 0.1f).coerceAtLeast(0.8f) }
+            ) {
                 Icon(Icons.Default.TextDecrease, contentDescription = "Smaller text", tint = ReaderBody)
             }
-            IconButton(onClick = { fontScale = (fontScale + 0.1f).coerceAtMost(1.5f) }) {
+            IconButton(
+                onClick = { fontScale = (fontScale + 0.1f).coerceAtMost(1.5f) }
+            ) {
                 Icon(Icons.Default.TextIncrease, contentDescription = "Larger text", tint = ReaderBody)
             }
         }
@@ -186,23 +240,25 @@ private fun OfflineDuaDetailScreen(
             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            items(item.blocks) { block ->
+            items(
+                items = item.blocks,
+                key = { block -> "${block.type}:${block.text.hashCode()}" }
+            ) { block ->
                 when (block.type) {
                     "arabic" -> DuaBlockCard(
                         label = if (isBangla) "আরবি" else "Arabic",
                         text = block.text.removePrefix("আরবি:").trim(),
                         background = Color(0xFF1B3026),
                         textColor = ReaderArabic,
-                        fontSize = 24.sp * fontScale,
-                        alignment = TextAlign.Right,
-                        rtl = true
+                        fontSize = (24f * fontScale).sp,
+                        alignment = TextAlign.Right
                     )
                     "pronunciation" -> DuaBlockCard(
                         label = if (isBangla) "বাংলা উচ্চারণ" else "Pronunciation",
                         text = block.text.removePrefix("উচ্চারণ:").trim(),
                         background = ReaderCard,
                         textColor = ReaderBody,
-                        fontSize = 17.sp * fontScale,
+                        fontSize = (17f * fontScale).sp,
                         alignment = TextAlign.Start
                     )
                     "meaning" -> DuaBlockCard(
@@ -210,7 +266,7 @@ private fun OfflineDuaDetailScreen(
                         text = block.text.removePrefix("অর্থ:").trim(),
                         background = ReaderCard,
                         textColor = ReaderBody,
-                        fontSize = 17.sp * fontScale,
+                        fontSize = (17f * fontScale).sp,
                         alignment = TextAlign.Start
                     )
                     "reference" -> DuaBlockCard(
@@ -218,15 +274,17 @@ private fun OfflineDuaDetailScreen(
                         text = block.text,
                         background = Color(0xFF182A22),
                         textColor = ReaderSecondary,
-                        fontSize = 14.sp * fontScale,
+                        fontSize = (14f * fontScale).sp,
                         alignment = TextAlign.Start
                     )
                     else -> Text(
                         text = block.text,
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 2.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp, vertical = 2.dp),
                         color = ReaderBody,
-                        fontSize = 16.sp * fontScale,
-                        lineHeight = (25.sp * fontScale)
+                        fontSize = (16f * fontScale).sp,
+                        lineHeight = (25f * fontScale).sp
                     )
                 }
             }
@@ -241,25 +299,32 @@ private fun DuaBlockCard(
     background: Color,
     textColor: Color,
     fontSize: androidx.compose.ui.unit.TextUnit,
-    alignment: TextAlign,
-    rtl: Boolean = false
+    alignment: TextAlign
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = background)
     ) {
-        Column(Modifier.fillMaxWidth().padding(16.dp)) {
-            Text(label, color = IslamicGold, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = label,
+                color = IslamicGold,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
             Spacer(Modifier.height(7.dp))
             Text(
                 text = text,
                 modifier = Modifier.fillMaxWidth(),
                 color = textColor,
                 fontSize = fontSize,
-                lineHeight = fontSize * 1.65f,
-                textAlign = alignment,
-                fontWeight = if (rtl) FontWeight.Normal else FontWeight.Normal
+                lineHeight = (fontSize.value * 1.65f).sp,
+                textAlign = alignment
             )
         }
     }
