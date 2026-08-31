@@ -293,7 +293,8 @@ fun MainAppContent(
                 RamadanModeScreen(
                     viewModel = mainViewModel,
                     uiState = mainUiState,
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onNavigateTo = { route -> navController.navigate(route) }
                 )
             }
 
@@ -345,6 +346,14 @@ fun MainAppContent(
                 IslamicWebViewScreen(
                     title = if (isBangla) "আল কুরআন" else "AL QURAN",
                     url = "https://www.hadithbd.com/quran/",
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.SehriAlarm.route) {
+                SehriAlarmScreen(
+                    viewModel = mainViewModel,
+                    uiState = mainUiState,
                     onBack = { navController.popBackStack() }
                 )
             }

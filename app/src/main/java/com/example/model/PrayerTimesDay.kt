@@ -32,6 +32,27 @@ data class SinglePrayerTime(
     }
 
     companion object {
+        fun formatLocalTime(time: LocalTime, is24Hour: Boolean, isBangla: Boolean = false): String {
+            return if (is24Hour) {
+                val raw = String.format("%02d:%02d", time.hour, time.minute)
+                if (isBangla) toBanglaNumerals(raw) else raw
+            } else {
+                val hour24 = time.hour
+                val minute = time.minute
+                val period = if (hour24 >= 12) {
+                    if (isBangla) "অপরাহ্ন" else "PM"
+                } else {
+                    if (isBangla) "পূর্বাহ্ন" else "AM"
+                }
+                val hour12 = when (val h = hour24 % 12) {
+                    0 -> 12
+                    else -> h
+                }
+                val rawTime = String.format("%02d:%02d %s", hour12, minute, period)
+                if (isBangla) toBanglaNumerals(rawTime) else rawTime
+            }
+        }
+
         fun toBanglaNumerals(input: String): String {
             val banglaDigits = charArrayOf('০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯')
             val sb = java.lang.StringBuilder()

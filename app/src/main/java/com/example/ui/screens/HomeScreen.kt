@@ -80,12 +80,14 @@ fun HomeScreen(
         item {
             RamadanQuickCard(
                 isRamadanActive = uiState.settings.isRamadanModeActive,
+                isSehriAlarmEnabled = uiState.settings.isSehriAlarmEnabled,
                 sehriCountdown = uiState.sehriRemainingStr,
                 iftarCountdown = uiState.iftarRemainingStr,
                 sehriTime = prayerTimes?.sehriEnd?.toString() ?: "--:--",
                 iftarTime = prayerTimes?.iftar?.toString() ?: "--:--",
                 isBangla = isBangla,
                 onOpenRamadan = { onNavigateTo("ramadan_mode") },
+                onOpenSehriAlarm = { onNavigateTo("sehri_alarm") },
                 onToggleRamadan = { viewModel.toggleRamadanMode() }
             )
         }
@@ -387,19 +389,20 @@ fun NextPrayerHeroCard(
 @Composable
 private fun RamadanQuickCard(
     isRamadanActive: Boolean,
+    isSehriAlarmEnabled: Boolean,
     sehriCountdown: String,
     iftarCountdown: String,
     sehriTime: String,
     iftarTime: String,
     isBangla: Boolean,
     onOpenRamadan: () -> Unit,
+    onOpenSehriAlarm: () -> Unit,
     onToggleRamadan: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp)
-            .clickable { onOpenRamadan() },
+            .padding(horizontal = 16.dp, vertical = 6.dp),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -443,7 +446,10 @@ private fun RamadanQuickCard(
             ) {
                 // Sehri Card
                 Surface(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(14.dp))
+                        .clickable { onOpenSehriAlarm() },
                     shape = RoundedCornerShape(14.dp),
                     color = MaterialTheme.colorScheme.surface
                 ) {
@@ -451,11 +457,20 @@ private fun RamadanQuickCard(
                         modifier = Modifier.padding(12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
-                            text = if (isBangla) "সেহরি শেষ" else "Sehri Ends",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = IslamicMutedText
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = if (isBangla) "সেহরি শেষ" else "Sehri Ends",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = IslamicMutedText
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                imageVector = Icons.Default.Alarm,
+                                contentDescription = "Alarm",
+                                tint = if (isSehriAlarmEnabled) IslamicEmeraldPrimary else IslamicMutedText.copy(alpha = 0.6f),
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
                         Text(
                             text = sehriTime,
                             style = MaterialTheme.typography.titleLarge,
@@ -495,6 +510,54 @@ private fun RamadanQuickCard(
                             text = if (isBangla) "বাকি: $iftarCountdown" else "Left: $iftarCountdown",
                             style = MaterialTheme.typography.labelSmall,
                             color = IslamicEmeraldPrimary
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Sehri Alarm Quick Entry Bar
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .clickable { onOpenSehriAlarm() },
+                shape = RoundedCornerShape(10.dp),
+                color = if (isSehriAlarmEnabled) IslamicEmeraldPrimary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Bedtime,
+                            contentDescription = "Sehri Alarm",
+                            tint = if (isSehriAlarmEnabled) IslamicEmeraldPrimary else IslamicGoldDark,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (isBangla) "সেহরি ও তাহাজ্জুদ অ্যালার্ম" else "Sehri & Tahajjud Alarm",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = if (isSehriAlarmEnabled) {
+                                if (isBangla) "চালু আছে 🔔" else "Active 🔔"
+                            } else {
+                                if (isBangla) "সেট করুন ⚙️" else "Set Alarm ⚙️"
+                            },
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isSehriAlarmEnabled) IslamicEmeraldPrimary else IslamicGoldDark
                         )
                     }
                 }

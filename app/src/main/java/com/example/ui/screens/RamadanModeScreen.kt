@@ -32,10 +32,12 @@ fun RamadanModeScreen(
     viewModel: MainViewModel,
     uiState: MainUiState,
     onBack: () -> Unit,
+    onNavigateTo: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val isBangla = uiState.settings.language == AppLanguage.BANGLA
     val prayerTimes = uiState.prayerTimes
+    val settings = uiState.settings
 
     // Generate 30 days Ramadan calendar starting from today
     val today = LocalDate.now()
@@ -141,6 +143,89 @@ fun RamadanModeScreen(
                                     text = if (isBangla) "বাকি: ${uiState.iftarRemainingStr}" else "Remaining: ${uiState.iftarRemainingStr}",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = IslamicEmeraldPrimary
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 1.5 Sehri Wake-up Alarm Quick Card
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (settings.isSehriAlarmEnabled) IslamicGoldDark.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                    border = if (settings.isSehriAlarmEnabled) androidx.compose.foundation.BorderStroke(1.dp, IslamicGoldDark.copy(alpha = 0.4f)) else null
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Surface(
+                                    shape = RoundedCornerShape(10.dp),
+                                    color = IslamicGoldDark.copy(alpha = 0.2f),
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Default.Alarm,
+                                            contentDescription = "Alarm",
+                                            tint = IslamicGoldDark,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column {
+                                    Text(
+                                        text = if (isBangla) "সেহরি ও তাহাজ্জুদ অ্যালার্ম" else "Sehri & Tahajjud Alarm",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = if (settings.isSehriAlarmEnabled) {
+                                            when (settings.sehriAlarmMode) {
+                                                com.example.model.SehriAlarmMode.BEFORE_SEHRI_END -> if (isBangla) "সেহরির ${settings.sehriAlarmOffsetMinutes} মিনিট পূর্বে বাজবে" else "Rings ${settings.sehriAlarmOffsetMinutes} min before Sehri"
+                                                com.example.model.SehriAlarmMode.CUSTOM_TIME -> if (isBangla) "নির্দিষ্ট সময়: ${String.format("%02d:%02d", settings.sehriAlarmCustomHour, settings.sehriAlarmCustomMinute)}" else "Custom time: ${String.format("%02d:%02d", settings.sehriAlarmCustomHour, settings.sehriAlarmCustomMinute)}"
+                                            }
+                                        } else {
+                                            if (isBangla) "ঘুম থেকে উঠার জন্য অ্যালার্ম সেট করুন" else "Set alarm to wake up for Sehri"
+                                        },
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = IslamicMutedText
+                                    )
+                                }
+                            }
+
+                            Switch(
+                                checked = settings.isSehriAlarmEnabled,
+                                onCheckedChange = { viewModel.toggleSehriAlarm(it) }
+                            )
+                        }
+
+                        if (onNavigateTo != null) {
+                            FilledTonalButton(
+                                onClick = { onNavigateTo("sehri_alarm") },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Icon(Icons.Default.Tune, contentDescription = "Customize", modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = if (isBangla) "অ্যালার্মের সময় ও সাউন্ড কাস্টমাইজ করুন ⚙️" else "Customize Timing & Sound ⚙️",
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
                         }

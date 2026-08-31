@@ -189,6 +189,20 @@ enum class AppLanguage(val id: String, val code: String, val title: String) {
     }
 }
 
+enum class SehriAlarmMode(val id: String, val titleEn: String, val titleBn: String) {
+    BEFORE_SEHRI_END("before_sehri_end", "Before Sehri Ends", "সেহরি শেষ হওয়ার পূর্বে"),
+    CUSTOM_TIME("custom_time", "Custom Exact Time", "নির্দিষ্ট সময়ে");
+
+    val nameEn: String get() = titleEn
+    val nameBn: String get() = titleBn
+
+    companion object {
+        fun fromId(id: String): SehriAlarmMode {
+            return entries.firstOrNull { it.id.equals(id, ignoreCase = true) } ?: BEFORE_SEHRI_END
+        }
+    }
+}
+
 data class PrayerSettings(
     val calculationMethod: PrayerCalculationMethod = PrayerCalculationMethod.KARACHI,
     val asrMethod: AsrJuristicMethod = AsrJuristicMethod.SHAFI,
@@ -212,5 +226,13 @@ data class PrayerSettings(
     val themeMode: AppThemeMode = AppThemeMode.SYSTEM,
     val language: AppLanguage = AppLanguage.BANGLA,
     val isRamadanModeActive: Boolean = false,
-    val isOnboardingCompleted: Boolean = false
+    val isOnboardingCompleted: Boolean = false,
+    // Sehri Wake-up Alarm Settings
+    val isSehriAlarmEnabled: Boolean = false,
+    val sehriAlarmMode: SehriAlarmMode = SehriAlarmMode.BEFORE_SEHRI_END,
+    val sehriAlarmOffsetMinutes: Int = 30, // 30 minutes before Sehri end by default
+    val sehriAlarmCustomHour: Int = 4,
+    val sehriAlarmCustomMinute: Int = 0,
+    val sehriAlarmSoundType: AzanSoundType = AzanSoundType.FULL_AZAN,
+    val sehriAlarmVibration: Boolean = true
 )

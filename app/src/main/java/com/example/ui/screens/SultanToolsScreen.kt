@@ -159,6 +159,16 @@ fun SultanToolsScreen(
             Icons.Default.Bedtime,
             "ramadan_mode",
             IslamicEmeraldDark
+        ),
+        SultanToolMenuItem(
+            "sehri_alarm",
+            "Sehri Wake-up Alarm",
+            "সেহরি অ্যালার্ম (ঘুম থেকে উঠার সময়)",
+            "Customizable alarm to wake up on time for Sehri & Tahajjud",
+            "সেহরি ও তাহাজ্জুদের জন্য নিজের ইচ্ছামতো অ্যালার্ম সেট করুন",
+            Icons.Default.Alarm,
+            "sehri_alarm",
+            IslamicGoldDark
         )
     )
 

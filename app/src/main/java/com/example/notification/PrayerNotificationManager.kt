@@ -51,10 +51,102 @@ class PrayerNotificationManager(private val context: Context) {
                 description = "General Islamic reminders and updates"
             }
 
+            // 4. Sehri Wake-up Alarm Channel
+            val sehriChannel = NotificationChannel(
+                CHANNEL_SEHRI_ALARM_ID,
+                "Sehri Wake-up Alarm (সেহরি অ্যালার্ম)",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Alarm alerts for Sehri wake-up"
+                setSound(null, null)
+                enableVibration(true)
+                vibrationPattern = longArrayOf(0, 800, 300, 800, 300, 800)
+            }
+
             notificationManager.createNotificationChannel(prayerChannel)
             notificationManager.createNotificationChannel(azanChannel)
             notificationManager.createNotificationChannel(generalChannel)
+            notificationManager.createNotificationChannel(sehriChannel)
         }
+    }
+
+    fun showSehriAlarmNotification(
+        sehriTimeStr: String,
+        isBangla: Boolean,
+        offsetMinutes: Int = 0
+    ) {
+        val title = if (isBangla) "🌙 সেহরির সময় হয়েছে! ঘুম থেকে উঠুন" else "🌙 Time for Sehri! Wake Up"
+        val content = if (isBangla) {
+            if (offsetMinutes > 0) {
+                "সেহরি শেষ হওয়ার $offsetMinutes মিনিট পূর্বে অ্যালার্ম। সেহরি শেষ: $sehriTimeStr"
+            } else {
+                "সেহরির অ্যালার্ম ($sehriTimeStr)। সময়মতো সেহরি গ্রহণ করুন।"
+            }
+        } else {
+            if (offsetMinutes > 0) {
+                "Alarm set $offsetMinutes min before Sehri ends. Sehri ends at: $sehriTimeStr"
+            } else {
+                "Sehri wake-up alarm ($sehriTimeStr). Have your blessed meal on time."
+            }
+        }
+
+        val openAppIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val openAppPendingIntent = PendingIntent.getActivity(
+            context,
+            NOTIFICATION_SEHRI_ALARM_ID,
+            openAppIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Dismiss action
+        val dismissIntent = Intent(context, PrayerAlarmReceiver::class.java).apply {
+            action = ACTION_DISMISS_SEHRI
+        }
+        val dismissPendingIntent = PendingIntent.getBroadcast(
+            context,
+            2001,
+            dismissIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Snooze action (5 min)
+        val snoozeIntent = Intent(context, PrayerAlarmReceiver::class.java).apply {
+            action = ACTION_SNOOZE_SEHRI
+            putExtra(EXTRA_SEHRI_TIME, sehriTimeStr)
+        }
+        val snoozePendingIntent = PendingIntent.getBroadcast(
+            context,
+            2002,
+            snoozeIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val builder = NotificationCompat.Builder(context, CHANNEL_SEHRI_ALARM_ID)
+            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setContentTitle(title)
+            .setContentText(content)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .setAutoCancel(true)
+            .setContentIntent(openAppPendingIntent)
+            .addAction(
+                android.R.drawable.ic_menu_close_clear_cancel,
+                if (isBangla) "বন্ধ করুন" else "Dismiss",
+                dismissPendingIntent
+            )
+            .addAction(
+                android.R.drawable.ic_lock_idle_alarm,
+                if (isBangla) "৫ মি. স্নুজ" else "5m Snooze",
+                snoozePendingIntent
+            )
+
+        notificationManager.notify(NOTIFICATION_SEHRI_ALARM_ID, builder.build())
+    }
+
+    fun cancelSehriNotification() {
+        notificationManager.cancel(NOTIFICATION_SEHRI_ALARM_ID)
     }
 
     fun showPrayerNotification(
@@ -132,15 +224,23 @@ class PrayerNotificationManager(private val context: Context) {
         const val CHANNEL_PRAYER_ID = "islamic_prayer_alert_channel_v2"
         const val CHANNEL_AZAN_ID = "islamic_azan_playback_channel_v2"
         const val CHANNEL_GENERAL_ID = "islamic_general_channel"
+        const val CHANNEL_SEHRI_ALARM_ID = "islamic_sehri_alarm_channel_v2"
 
         const val NOTIFICATION_PRAYER_BASE_ID = 2000
         const val NOTIFICATION_AZAN_SERVICE_ID = 3000
+        const val NOTIFICATION_SEHRI_ALARM_ID = 4000
 
         const val ACTION_STOP_AZAN = "com.aistudio.islamicprayer.ACTION_STOP_AZAN"
         const val ACTION_PRAYER_ALARM = "com.aistudio.islamicprayer.ACTION_PRAYER_ALARM"
+        const val ACTION_SEHRI_ALARM = "com.aistudio.islamicprayer.ACTION_SEHRI_ALARM"
+        const val ACTION_DISMISS_SEHRI = "com.aistudio.islamicprayer.ACTION_DISMISS_SEHRI"
+        const val ACTION_SNOOZE_SEHRI = "com.aistudio.islamicprayer.ACTION_SNOOZE_SEHRI"
+
         const val EXTRA_PRAYER_TYPE = "extra_prayer_type"
         const val EXTRA_PRAYER_TIME = "extra_prayer_time"
         const val EXTRA_LOCATION_NAME = "extra_location_name"
         const val EXTRA_ASR_METHOD = "extra_asr_method"
+        const val EXTRA_SEHRI_TIME = "extra_sehri_time"
+        const val EXTRA_SEHRI_OFFSET = "extra_sehri_offset"
     }
 }

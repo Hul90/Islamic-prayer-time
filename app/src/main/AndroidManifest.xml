@@ -45,6 +45,9 @@
             <intent-filter>
                 <action android:name="com.aistudio.islamicprayer.ACTION_PRAYER_ALARM" />
                 <action android:name="com.aistudio.islamicprayer.ACTION_STOP_AZAN" />
+                <action android:name="com.aistudio.islamicprayer.ACTION_SEHRI_ALARM" />
+                <action android:name="com.aistudio.islamicprayer.ACTION_DISMISS_SEHRI" />
+                <action android:name="com.aistudio.islamicprayer.ACTION_SNOOZE_SEHRI" />
             </intent-filter>
         </receiver>
 

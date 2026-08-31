@@ -164,7 +164,7 @@ fun SettingsScreen(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Volume Slider
+                    // Volume Slider & Audio Test
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -183,15 +183,54 @@ fun SettingsScreen(
                             color = IslamicEmeraldPrimary
                         )
                     }
+
                     Slider(
                         value = settings.azanVolume,
                         onValueChange = { viewModel.setAzanVolume(it) },
-                        valueRange = 0.1f..1.0f,
+                        valueRange = 0.05f..1.0f,
                         colors = SliderDefaults.colors(
                             thumbColor = IslamicEmeraldPrimary,
                             activeTrackColor = IslamicEmeraldPrimary
-                        )
+                        ),
+                        modifier = Modifier.testTag("slider_azan_volume")
                     )
+
+                    // Audio Test Preview Button
+                    val isPreviewPlaying by viewModel.isPlayingAudioPreview.collectAsState()
+                    FilledTonalButton(
+                        onClick = {
+                            if (isPreviewPlaying) {
+                                viewModel.stopAzanVolumePreview()
+                            } else {
+                                viewModel.playAzanVolumePreview(settings.azanVolume)
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("btn_test_azan_volume"),
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = if (isPreviewPlaying) MaterialTheme.colorScheme.errorContainer else IslamicEmeraldPrimary.copy(alpha = 0.15f),
+                            contentColor = if (isPreviewPlaying) MaterialTheme.colorScheme.onErrorContainer else IslamicEmeraldPrimary
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isPreviewPlaying) Icons.Default.Stop else Icons.Default.VolumeUp,
+                            contentDescription = "Test Audio",
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (isPreviewPlaying) {
+                                if (isBangla) "টেস্ট আজান বন্ধ করুন ⏹" else "Stop Test Azan ⏹"
+                            } else {
+                                if (isBangla) "🔊 আজান ভলিউম টেস্ট করুন" else "🔊 Test Azan Volume"
+                            },
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
 
                     // Vibration toggle
                     Row(
@@ -210,6 +249,92 @@ fun SettingsScreen(
                             onCheckedChange = { viewModel.setVibration(it) }
                         )
                     }
+                }
+            }
+
+            // 2.5 Sehri Wake-up Alarm Settings Card
+            SettingsSectionHeader(title = if (isBangla) "সেহরি অ্যালার্ম (ঘুম থেকে উঠার সময়)" else "Sehri Wake-up Alarm")
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable { onNavigateTo("sehri_alarm") },
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = IslamicGoldDark.copy(alpha = 0.15f),
+                            modifier = Modifier.size(44.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Bedtime,
+                                    contentDescription = "Sehri Alarm",
+                                    tint = IslamicGoldDark,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = if (isBangla) "কাস্টম সেহরি অ্যালার্ম" else "Custom Sehri Alarm",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = if (settings.isSehriAlarmEnabled) IslamicEmeraldPrimary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)
+                                ) {
+                                    Text(
+                                        text = if (settings.isSehriAlarmEnabled) {
+                                            if (isBangla) "চালু" else "Active"
+                                        } else {
+                                            if (isBangla) "বন্ধ" else "Off"
+                                        },
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (settings.isSehriAlarmEnabled) IslamicEmeraldPrimary else IslamicMutedText,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                            Text(
+                                text = if (settings.isSehriAlarmEnabled) {
+                                    when (settings.sehriAlarmMode) {
+                                        SehriAlarmMode.BEFORE_SEHRI_END -> if (isBangla) "সেহরি শেষ হওয়ার ${settings.sehriAlarmOffsetMinutes} মিনিট পূর্বে" else "${settings.sehriAlarmOffsetMinutes} min before Sehri ends"
+                                        SehriAlarmMode.CUSTOM_TIME -> if (isBangla) "নির্দিষ্ট সময়: ${String.format("%02d:%02d", settings.sehriAlarmCustomHour, settings.sehriAlarmCustomMinute)}" else "Custom time: ${String.format("%02d:%02d", settings.sehriAlarmCustomHour, settings.sehriAlarmCustomMinute)}"
+                                    }
+                                } else {
+                                    if (isBangla) "সেহরির জন্য নিজের ইচ্ছামতো অ্যালার্ম সেট করুন" else "Set custom alarm to wake up for Sehri"
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = IslamicMutedText
+                            )
+                        }
+                    }
+
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = "Open Sehri Alarm",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 

@@ -7,6 +7,7 @@ import com.example.IslamicPrayerApplication
 import com.example.calculation.CalendarEngine
 import com.example.calculation.PrayerTimeEngine
 import com.example.model.*
+import com.example.service.AzanAudioService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -240,9 +241,63 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private val _isPlayingAudioPreview = MutableStateFlow(false)
+    val isPlayingAudioPreview: StateFlow<Boolean> = _isPlayingAudioPreview.asStateFlow()
+
     fun setAzanVolume(volume: Float) {
         viewModelScope.launch {
             settingsRepo.updateAzanVolume(volume)
+            AzanAudioService.updateVolume(getApplication(), volume)
+        }
+    }
+
+    fun playAzanVolumePreview(volume: Float) {
+        _isPlayingAudioPreview.value = true
+        AzanAudioService.startPreview(getApplication(), volume)
+        viewModelScope.launch {
+            delay(6000)
+            _isPlayingAudioPreview.value = false
+        }
+    }
+
+    fun stopAzanVolumePreview() {
+        _isPlayingAudioPreview.value = false
+        AzanAudioService.stopAzan(getApplication())
+    }
+
+    fun toggleSehriAlarm(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepo.updateSehriAlarmEnabled(enabled)
+        }
+    }
+
+    fun setSehriAlarmMode(mode: SehriAlarmMode) {
+        viewModelScope.launch {
+            settingsRepo.updateSehriAlarmMode(mode)
+        }
+    }
+
+    fun setSehriAlarmOffset(offsetMinutes: Int) {
+        viewModelScope.launch {
+            settingsRepo.updateSehriAlarmOffset(offsetMinutes)
+        }
+    }
+
+    fun setSehriAlarmCustomTime(hour: Int, minute: Int) {
+        viewModelScope.launch {
+            settingsRepo.updateSehriAlarmCustomTime(hour, minute)
+        }
+    }
+
+    fun setSehriAlarmSoundType(type: AzanSoundType) {
+        viewModelScope.launch {
+            settingsRepo.updateSehriAlarmSoundType(type)
+        }
+    }
+
+    fun setSehriAlarmVibration(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepo.updateSehriAlarmVibration(enabled)
         }
     }
 

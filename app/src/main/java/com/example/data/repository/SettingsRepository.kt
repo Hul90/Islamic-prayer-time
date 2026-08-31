@@ -39,6 +39,15 @@ class SettingsRepository(private val context: Context) {
         val IS_RAMADAN_MODE = booleanPreferencesKey("is_ramadan_mode")
         val IS_ONBOARDING_COMPLETED = booleanPreferencesKey("is_onboarding_completed")
 
+        // Sehri Wake-up Alarm
+        val SEHRI_ALARM_ENABLED = booleanPreferencesKey("sehri_alarm_enabled")
+        val SEHRI_ALARM_MODE = stringPreferencesKey("sehri_alarm_mode")
+        val SEHRI_ALARM_OFFSET = intPreferencesKey("sehri_alarm_offset")
+        val SEHRI_ALARM_CUSTOM_HOUR = intPreferencesKey("sehri_alarm_custom_hour")
+        val SEHRI_ALARM_CUSTOM_MINUTE = intPreferencesKey("sehri_alarm_custom_minute")
+        val SEHRI_ALARM_SOUND_TYPE = stringPreferencesKey("sehri_alarm_sound_type")
+        val SEHRI_ALARM_VIBRATION = booleanPreferencesKey("sehri_alarm_vibration")
+
         // Saved Location
         val LATITUDE = doublePreferencesKey("saved_latitude")
         val LONGITUDE = doublePreferencesKey("saved_longitude")
@@ -71,7 +80,14 @@ class SettingsRepository(private val context: Context) {
             themeMode = AppThemeMode.fromId(prefs[PreferencesKeys.THEME_MODE] ?: "system"),
             language = AppLanguage.fromId(prefs[PreferencesKeys.LANGUAGE] ?: "bn"),
             isRamadanModeActive = prefs[PreferencesKeys.IS_RAMADAN_MODE] ?: false,
-            isOnboardingCompleted = prefs[PreferencesKeys.IS_ONBOARDING_COMPLETED] ?: false
+            isOnboardingCompleted = prefs[PreferencesKeys.IS_ONBOARDING_COMPLETED] ?: false,
+            isSehriAlarmEnabled = prefs[PreferencesKeys.SEHRI_ALARM_ENABLED] ?: false,
+            sehriAlarmMode = SehriAlarmMode.fromId(prefs[PreferencesKeys.SEHRI_ALARM_MODE] ?: "before_sehri_end"),
+            sehriAlarmOffsetMinutes = prefs[PreferencesKeys.SEHRI_ALARM_OFFSET] ?: 30,
+            sehriAlarmCustomHour = prefs[PreferencesKeys.SEHRI_ALARM_CUSTOM_HOUR] ?: 4,
+            sehriAlarmCustomMinute = prefs[PreferencesKeys.SEHRI_ALARM_CUSTOM_MINUTE] ?: 0,
+            sehriAlarmSoundType = AzanSoundType.fromId(prefs[PreferencesKeys.SEHRI_ALARM_SOUND_TYPE] ?: "full_azan"),
+            sehriAlarmVibration = prefs[PreferencesKeys.SEHRI_ALARM_VIBRATION] ?: true
         )
     }
 
@@ -155,6 +171,33 @@ class SettingsRepository(private val context: Context) {
             prefs[PreferencesKeys.MAGHRIB_OFFSET] = maghrib
             prefs[PreferencesKeys.ISHA_OFFSET] = isha
         }
+    }
+
+    suspend fun updateSehriAlarmEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[PreferencesKeys.SEHRI_ALARM_ENABLED] = enabled }
+    }
+
+    suspend fun updateSehriAlarmMode(mode: SehriAlarmMode) {
+        context.dataStore.edit { it[PreferencesKeys.SEHRI_ALARM_MODE] = mode.id }
+    }
+
+    suspend fun updateSehriAlarmOffset(offsetMinutes: Int) {
+        context.dataStore.edit { it[PreferencesKeys.SEHRI_ALARM_OFFSET] = offsetMinutes }
+    }
+
+    suspend fun updateSehriAlarmCustomTime(hour: Int, minute: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[PreferencesKeys.SEHRI_ALARM_CUSTOM_HOUR] = hour
+            prefs[PreferencesKeys.SEHRI_ALARM_CUSTOM_MINUTE] = minute
+        }
+    }
+
+    suspend fun updateSehriAlarmSoundType(type: AzanSoundType) {
+        context.dataStore.edit { it[PreferencesKeys.SEHRI_ALARM_SOUND_TYPE] = type.id }
+    }
+
+    suspend fun updateSehriAlarmVibration(enabled: Boolean) {
+        context.dataStore.edit { it[PreferencesKeys.SEHRI_ALARM_VIBRATION] = enabled }
     }
 
     suspend fun saveLocation(location: LocationData) {
