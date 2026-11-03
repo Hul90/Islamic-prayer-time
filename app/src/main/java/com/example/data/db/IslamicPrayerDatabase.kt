@@ -24,7 +24,7 @@ abstract class IslamicPrayerDatabase : RoomDatabase() {
                     context.applicationContext,
                     IslamicPrayerDatabase::class.java,
                     "islamic_prayer_sultan.db"
-                ).fallbackToDestructiveMigration().build()
+                ).fallbackToDestructiveMigration(false).build()
                 INSTANCE = instance
                 instance
             }

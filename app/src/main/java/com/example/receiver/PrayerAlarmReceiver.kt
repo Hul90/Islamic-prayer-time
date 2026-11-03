@@ -33,6 +33,7 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
         if (action == PrayerNotificationManager.ACTION_DISMISS_SEHRI) {
             AzanAudioService.stopAzan(context)
             app?.notificationManager?.cancelSehriNotification()
+            app?.alarmScheduler?.cancelSehriAlarms()
             return
         }
 
@@ -55,6 +56,16 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
         handlePrayerAlarm(context, app, intent)
     }
 
+    private fun getVibrator(context: Context): Vibrator? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? android.os.VibratorManager
+            vibratorManager?.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+        }
+    }
+
     private fun handleSehriAlarm(context: Context, app: IslamicPrayerApplication?, intent: Intent) {
         if (app == null) return
         val pendingResult = goAsync()
@@ -69,7 +80,7 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
 
                 if (settings.sehriAlarmVibration) {
                     try {
-                        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+                        val vibrator = getVibrator(context)
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             vibrator?.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 800, 300, 800, 300, 800), -1))
                         } else {
@@ -121,7 +132,7 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
 
                 if (settings.isVibrationEnabled) {
                     try {
-                        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+                        val vibrator = getVibrator(context)
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             vibrator?.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 500, 200, 500), -1))
                         } else {

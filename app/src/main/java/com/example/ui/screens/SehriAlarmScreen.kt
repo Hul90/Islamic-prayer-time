@@ -1,5 +1,11 @@
 package com.example.ui.screens
 
+import android.app.AlarmManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings as AndroidSettings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -9,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,11 +23,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.NotificationManagerCompat
 import com.example.model.AppLanguage
 import com.example.model.AzanSoundType
 import com.example.model.SehriAlarmMode
@@ -38,10 +47,23 @@ fun SehriAlarmScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val settings = uiState.settings
     val isBangla = settings.language == AppLanguage.BANGLA
     val prayerTimes = uiState.prayerTimes
     val sehriEndTime = prayerTimes?.sehriEnd ?: LocalTime.of(5, 4)
+
+    val alarmManager = remember(context) { context.getSystemService(Context.ALARM_SERVICE) as AlarmManager }
+    val canExactAlarm = remember(context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            alarmManager.canScheduleExactAlarms()
+        } else {
+            true
+        }
+    }
+    val areNotificationsEnabled = remember(context) {
+        NotificationManagerCompat.from(context).areNotificationsEnabled()
+    }
 
     // Calculate effective alarm time preview
     val calculatedAlarmTime: LocalTime = when (settings.sehriAlarmMode) {
@@ -69,7 +91,7 @@ fun SehriAlarmScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack, modifier = Modifier.testTag("btn_back_sehri_alarm")) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -153,6 +175,112 @@ fun SehriAlarmScreen(
                     }
 
                     if (settings.isSehriAlarmEnabled) {
+                        if (!areNotificationsEnabled) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = MaterialTheme.colorScheme.errorContainer,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Warning,
+                                            contentDescription = "Warning",
+                                            tint = MaterialTheme.colorScheme.error,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = if (isBangla) "নোটিফিকেশন পারমিশন বন্ধ আছে!" else "Notifications are blocked!",
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onErrorContainer
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = if (isBangla)
+                                            "সিস্টেম সেটিংসে নোটিফিকেশন বন্ধ থাকায় সেহরি অ্যালার্ম ফুল-স্ক্রিন নোটিফিকেশন আসবে না।"
+                                        else
+                                            "Notifications are disabled in system settings. Sehri alarm alerts will not appear.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    FilledTonalButton(
+                                        onClick = {
+                                            val intent = Intent(AndroidSettings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                                putExtra(AndroidSettings.EXTRA_APP_PACKAGE, context.packageName)
+                                            }
+                                            context.startActivity(intent)
+                                        },
+                                        colors = ButtonDefaults.filledTonalButtonColors(
+                                            containerColor = MaterialTheme.colorScheme.error,
+                                            contentColor = MaterialTheme.colorScheme.onError
+                                        ),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Text(
+                                            text = if (isBangla) "সেটিংসে গিয়ে চালু করুন" else "Enable in Settings",
+                                            style = MaterialTheme.typography.labelMedium
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        if (!canExactAlarm && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = IslamicGoldDark.copy(alpha = 0.15f),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Info,
+                                            contentDescription = "Info",
+                                            tint = IslamicGoldDark,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = if (isBangla) "এক্সাক্ট অ্যালার্ম পারমিশন প্রয়োজন" else "Exact Alarm Permission Recommended",
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = if (isBangla)
+                                            "ঘুম থেকে সঠিক সময়ে জাগার জন্য এক্সাক্ট অ্যালার্ম পারমিশন দিন। অন্যথায় ব্যাটারি অপটিমাইজেশনের কারণে অ্যালার্ম কয়েক মিনিট দেরিতে বাজতে পারে।"
+                                        else
+                                            "Allow Exact Alarms to ensure you wake up at the exact planned minute for Sehri.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = IslamicMutedText
+                                    )
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    OutlinedButton(
+                                        onClick = {
+                                            val intent = Intent(AndroidSettings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                                                data = Uri.parse("package:${context.packageName}")
+                                            }
+                                            context.startActivity(intent)
+                                        },
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Text(
+                                            text = if (isBangla) "অনুমতি প্রদান করুন" else "Grant Permission",
+                                            style = MaterialTheme.typography.labelMedium
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
                         Spacer(modifier = Modifier.height(14.dp))
                         HorizontalDivider(color = IslamicEmeraldPrimary.copy(alpha = 0.2f))
                         Spacer(modifier = Modifier.height(14.dp))
@@ -582,7 +710,7 @@ fun SehriAlarmScreen(
                                 shape = RoundedCornerShape(12.dp)
                             ) {
                                 Icon(
-                                    imageVector = if (isPreviewPlaying) Icons.Default.Stop else Icons.Default.VolumeUp,
+                                    imageVector = if (isPreviewPlaying) Icons.Default.Stop else Icons.AutoMirrored.Filled.VolumeUp,
                                     contentDescription = "Test Audio",
                                     modifier = Modifier.size(18.dp)
                                 )

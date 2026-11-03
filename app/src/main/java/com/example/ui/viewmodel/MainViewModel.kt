@@ -60,10 +60,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), LocalDateTime.now())
 
-    // Combine primary core flows (date, location, settings)
-    private val _coreFlow = combine(_selectedDate, location, settings) { date, loc, sett ->
-        Triple(date, loc, sett)
-    }
+    private data class DayCalculatedTimes(
+        val date: LocalDate,
+        val location: LocationData,
+        val settings: PrayerSettings,
+        val prayerTimes: PrayerTimesDay,
+        val hijriDate: IslamicDate,
+        val banglaDate: BanglaDate
+    )
+
+    // Compute prayer times and calendar dates ONLY when date, location, or settings change
+    private val _dayCalculationFlow = combine(_selectedDate, location, settings) { date, loc, sett ->
+        val times = PrayerTimeEngine.calculatePrayerTimes(date, loc, sett)
+        val hijri = CalendarEngine.gregorianToHijri(date)
+        val bangla = CalendarEngine.gregorianToBangla(date)
+        DayCalculatedTimes(date, loc, sett, times, hijri, bangla)
+    }.distinctUntilChanged()
 
     // Combine status flows
     private val _statusFlow = combine(_isLocationLoading, _locationErrorMessage) { isLocLoading, locError ->
@@ -71,14 +83,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     val uiState: StateFlow<MainUiState> = combine(
-        _coreFlow,
+        _dayCalculationFlow,
         _currentTimeTicker,
         _statusFlow
-    ) { (date, loc, sett), now, (isLocLoading, locError) ->
-
-        val times = PrayerTimeEngine.calculatePrayerTimes(date, loc, sett)
-        val hijri = CalendarEngine.gregorianToHijri(date)
-        val bangla = CalendarEngine.gregorianToBangla(date)
+    ) { dayData, now, (isLocLoading, locError) ->
+        val date = dayData.date
+        val loc = dayData.location
+        val sett = dayData.settings
+        val times = dayData.prayerTimes
+        val hijri = dayData.hijriDate
+        val bangla = dayData.banglaDate
 
         val isToday = date.isEqual(now.toLocalDate())
         val pair = if (isToday) {

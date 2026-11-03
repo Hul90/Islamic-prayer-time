@@ -1,5 +1,6 @@
 package com.example.receiver
 
+import android.app.AlarmManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -15,7 +16,9 @@ class BootReceiver : BroadcastReceiver() {
         if (action != Intent.ACTION_BOOT_COMPLETED &&
             action != Intent.ACTION_MY_PACKAGE_REPLACED &&
             action != Intent.ACTION_TIME_CHANGED &&
-            action != Intent.ACTION_TIMEZONE_CHANGED
+            action != Intent.ACTION_TIMEZONE_CHANGED &&
+            action != "android.intent.action.TIME_SET" &&
+            action != AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED
         ) return
 
         val app = context.applicationContext as? IslamicPrayerApplication ?: return

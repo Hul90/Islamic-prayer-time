@@ -18,11 +18,20 @@ class PrayerAlarmScheduler(private val context: Context) {
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
+    fun canScheduleExactAlarms(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            alarmManager.canScheduleExactAlarms()
+        } else {
+            true
+        }
+    }
+
     @SuppressLint("ScheduleExactAlarm")
     fun scheduleAlarmsForTodayAndTomorrow(
         location: LocationData,
         settings: PrayerSettings
     ) {
+        // Always cancel existing scheduled alarms first to prevent stale or duplicate alarms
         cancelAllAlarms()
 
         val zoneId = try {
@@ -33,13 +42,13 @@ class PrayerAlarmScheduler(private val context: Context) {
         val today = LocalDate.now(zoneId)
         val tomorrow = today.plusDays(1)
 
-        // 1. Schedule Prayer Azan Alarms
+        // 1. Schedule Prayer Azan Alarms if globally enabled
         if (settings.isAzanGloballyEnabled) {
             scheduleDayPrayers(today, location, settings, isToday = true)
             scheduleDayPrayers(tomorrow, location, settings, isToday = false)
         }
 
-        // 2. Schedule Sehri Wake-up Alarms
+        // 2. Schedule Sehri Wake-up Alarms if enabled
         if (settings.isSehriAlarmEnabled) {
             scheduleDaySehriAlarm(today, location, settings, isToday = true)
             scheduleDaySehriAlarm(tomorrow, location, settings, isToday = false)
@@ -149,12 +158,7 @@ class PrayerAlarmScheduler(private val context: Context) {
         )
 
         try {
-            val canUseExact = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                alarmManager.canScheduleExactAlarms()
-            } else {
-                true
-            }
-            if (canUseExact) {
+            if (canScheduleExactAlarms()) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     alarmManager.setExactAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
@@ -172,39 +176,48 @@ class PrayerAlarmScheduler(private val context: Context) {
         }
     }
 
-    fun cancelAllAlarms() {
-        for (isToday in listOf(true, false)) {
-            for (type in PrayerType.entries) {
-                val requestCode = getRequestCode(type, isToday)
-                val intent = Intent(context, PrayerAlarmReceiver::class.java)
-                val pendingIntent = PendingIntent.getBroadcast(
-                    context,
-                    requestCode,
-                    intent,
-                    PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
-                )
-                if (pendingIntent != null) {
-                    alarmManager.cancel(pendingIntent)
-                }
-            }
+    fun cancelPrayerAlarm(type: PrayerType, isToday: Boolean) {
+        val requestCode = getRequestCode(type, isToday)
+        val intent = Intent(context, PrayerAlarmReceiver::class.java).apply {
+            action = PrayerNotificationManager.ACTION_PRAYER_ALARM
+            putExtra(PrayerNotificationManager.EXTRA_PRAYER_TYPE, type.id)
         }
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            requestCode,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        alarmManager.cancel(pendingIntent)
+        pendingIntent.cancel()
+    }
 
-        // Cancel Sehri alarms
+    fun cancelSehriAlarms() {
         for (requestCode in listOf(REQUEST_CODE_SEHRI_TODAY, REQUEST_CODE_SEHRI_TOMORROW, REQUEST_CODE_SEHRI_SNOOZE)) {
-            val intent = Intent(context, PrayerAlarmReceiver::class.java)
+            val intent = Intent(context, PrayerAlarmReceiver::class.java).apply {
+                action = PrayerNotificationManager.ACTION_SEHRI_ALARM
+            }
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
                 requestCode,
                 intent,
-                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-            if (pendingIntent != null) {
-                alarmManager.cancel(pendingIntent)
-            }
+            alarmManager.cancel(pendingIntent)
+            pendingIntent.cancel()
         }
     }
 
-    private fun getRequestCode(prayerType: PrayerType, isToday: Boolean): Int {
+    fun cancelAllAlarms() {
+        for (isToday in listOf(true, false)) {
+            for (type in PrayerType.entries) {
+                cancelPrayerAlarm(type, isToday)
+            }
+        }
+        cancelSehriAlarms()
+    }
+
+    fun getRequestCode(prayerType: PrayerType, isToday: Boolean): Int {
         val base = prayerType.ordinal * 10
         return if (isToday) base else base + 100
     }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -41,12 +42,12 @@ fun SultanToolsScreen(
 ) {
     val toolList = listOf(
         SultanToolMenuItem(
-            "namaz_learn",
+            "namaz_learning",
             "Authentic Namaz Guide",
             "সহীহ নামাজ শিক্ষা ও হাদীস দলিল",
             "Step-by-step prayer guide with verified Hadith references",
             "হাদীস রেফারেন্স সহ নামাজের নিয়ম ও দোয়া",
-            Icons.Default.MenuBook,
+            Icons.AutoMirrored.Filled.MenuBook,
             "tool_namaz_learning",
             IslamicEmeraldPrimary
         ),
@@ -71,12 +72,22 @@ fun SultanToolsScreen(
             IslamicGoldDark
         ),
         SultanToolMenuItem(
+            "allah_names",
+            "99 Beautiful Names of Allah",
+            "আল্লাহর ৯৯টি পবিত্র নাম (আসমাউল হুসনা)",
+            "All 99 names with Arabic, Bangla meaning, virtues & dhikr counter",
+            "আরবি, বাংলা উচ্চারণ, বিশুদ্ধ অর্থ, তাৎপর্য ও জিকির সুবিধাসহ আল্লাহর ৯৯টি পবিত্র নাম",
+            Icons.Default.AutoAwesome,
+            "tool_allah_names",
+            IslamicGoldDark
+        ),
+        SultanToolMenuItem(
             "quran",
             "AL QURAN",
             "আল কুরআন",
             "Read the Quran with Arabic text and Bangla translation",
             "আরবি কুরআন ও বাংলা অনুবাদ পড়ুন",
-            Icons.Default.MenuBook,
+            Icons.AutoMirrored.Filled.MenuBook,
             "tool_quran",
             IslamicEmeraldPrimary
         ),
@@ -106,7 +117,7 @@ fun SultanToolsScreen(
             "দৈনিক নামাজ ট্র্যাকার",
             "Track daily 5 prayers and view monthly streak",
             "দৈনিক ৫ ওয়াক্ত নামাজের হিসাব রাখুন",
-            Icons.Default.FactCheck,
+            Icons.AutoMirrored.Filled.FactCheck,
             "tool_tracker",
             Color(0xFF2E7D32)
         ),

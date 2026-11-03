@@ -46,10 +46,9 @@ class MainActivity : ComponentActivity() {
             val calendarViewModel: CalendarViewModel = viewModel()
             val toolsViewModel: SultanToolsViewModel = viewModel()
 
-            val mainUiState by mainViewModel.uiState.collectAsState()
-            val calendarUiState by calendarViewModel.uiState.collectAsState()
+            val settings by mainViewModel.settings.collectAsState()
 
-            val isDarkTheme = when (mainUiState.settings.themeMode) {
+            val isDarkTheme = when (settings.themeMode) {
                 AppThemeMode.SYSTEM -> isSystemInDarkTheme()
                 AppThemeMode.DARK -> true
                 AppThemeMode.LIGHT -> false
@@ -60,8 +59,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val isBangla = mainUiState.settings.language == AppLanguage.BANGLA
-                    val isOnboardingCompleted = mainUiState.settings.isOnboardingCompleted
+                    val isBangla = settings.language == AppLanguage.BANGLA
+                    val isOnboardingCompleted = settings.isOnboardingCompleted
 
                     var showOnboarding by remember(isOnboardingCompleted) {
                         mutableStateOf(!isOnboardingCompleted)
@@ -78,8 +77,6 @@ class MainActivity : ComponentActivity() {
                             mainViewModel = mainViewModel,
                             calendarViewModel = calendarViewModel,
                             toolsViewModel = toolsViewModel,
-                            mainUiState = mainUiState,
-                            calendarUiState = calendarUiState,
                             isBangla = isBangla
                         )
                     }
@@ -94,15 +91,14 @@ fun MainAppContent(
     mainViewModel: MainViewModel,
     calendarViewModel: CalendarViewModel,
     toolsViewModel: SultanToolsViewModel,
-    mainUiState: com.example.ui.viewmodel.MainUiState,
-    calendarUiState: com.example.ui.viewmodel.CalendarUiState,
     isBangla: Boolean
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val bottomNavItems = listOf(
+    val bottomNavItems = remember(isBangla) {
+        listOf(
         BottomNavItem(
             route = Screen.Home.route,
             titleEn = "Home",
@@ -143,7 +139,7 @@ fun MainAppContent(
             unselectedIcon = Icons.Outlined.Settings,
             testTag = "nav_settings"
         )
-    )
+    ) }
 
     val isTopLevelDestination = bottomNavItems.any { it.route == currentRoute }
 
@@ -194,6 +190,7 @@ fun MainAppContent(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Home.route) {
+                val mainUiState by mainViewModel.uiState.collectAsState()
                 HomeScreen(
                     viewModel = mainViewModel,
                     uiState = mainUiState,
@@ -202,6 +199,7 @@ fun MainAppContent(
             }
 
             composable(Screen.Prayer.route) {
+                val mainUiState by mainViewModel.uiState.collectAsState()
                 PrayerScreen(
                     viewModel = mainViewModel,
                     uiState = mainUiState,
@@ -210,6 +208,7 @@ fun MainAppContent(
             }
 
             composable(Screen.Calendar.route) {
+                val calendarUiState by calendarViewModel.uiState.collectAsState()
                 CalendarScreen(
                     viewModel = calendarViewModel,
                     uiState = calendarUiState,
@@ -226,6 +225,7 @@ fun MainAppContent(
             }
 
             composable(Screen.Settings.route) {
+                val mainUiState by mainViewModel.uiState.collectAsState()
                 SettingsScreen(
                     viewModel = mainViewModel,
                     uiState = mainUiState,
@@ -282,14 +282,16 @@ fun MainAppContent(
             }
 
             composable(Screen.NearbyMosques.route) {
+                val location by mainViewModel.location.collectAsState()
                 NearbyMosquesScreen(
-                    location = mainUiState.location,
+                    location = location,
                     isBangla = isBangla,
                     onBack = { navController.popBackStack() }
                 )
             }
 
             composable(Screen.RamadanMode.route) {
+                val mainUiState by mainViewModel.uiState.collectAsState()
                 RamadanModeScreen(
                     viewModel = mainViewModel,
                     uiState = mainUiState,
@@ -314,6 +316,7 @@ fun MainAppContent(
             }
 
             composable(Screen.PrayerCalculationDetails.route) {
+                val mainUiState by mainViewModel.uiState.collectAsState()
                 PrayerCalculationDetailsScreen(
                     uiState = mainUiState,
                     onBack = { navController.popBackStack() }
@@ -351,9 +354,17 @@ fun MainAppContent(
             }
 
             composable(Screen.SehriAlarm.route) {
+                val mainUiState by mainViewModel.uiState.collectAsState()
                 SehriAlarmScreen(
                     viewModel = mainViewModel,
                     uiState = mainUiState,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.AllahNames.route) {
+                AllahNamesScreen(
+                    isBangla = isBangla,
                     onBack = { navController.popBackStack() }
                 )
             }

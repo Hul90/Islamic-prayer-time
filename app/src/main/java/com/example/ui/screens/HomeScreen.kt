@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -584,7 +585,7 @@ private fun PrayerTimesListCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(vertical = 8.dp)) {
-            val list = prayerTimes.getPrayerList()
+            val list = remember(prayerTimes) { prayerTimes.getPrayerList() }
             list.forEachIndexed { index, prayer ->
                 val isNext = nextPrayer?.type == prayer.type
                 val isCurrent = currentPrayer?.type == prayer.type
@@ -799,14 +800,16 @@ private fun QuickToolsGrid(
     isBangla: Boolean,
     onNavigateTo: (String) -> Unit
 ) {
-    val tools = listOf(
-        QuickToolItem("Qibla Finder", "কিবলা কম্পাস", Icons.Default.Explore, "tool_qibla", IslamicEmeraldPrimary),
-        QuickToolItem("Tasbih", "ডিজিটাল তাসবিহ", Icons.Default.TouchApp, "tool_tasbih", IslamicGoldDark),
-        QuickToolItem("Prayer Tracker", "নামাজ ট্র্যাকার", Icons.Default.FactCheck, "tool_tracker", Color(0xFF2E7D32)),
-        QuickToolItem("Calendar", "ক্যালেন্ডার", Icons.Default.CalendarMonth, "calendar", Color(0xFF00838F)),
-        QuickToolItem("Zakat Calculator", "যাকাত ক্যালকুলেটর", Icons.Default.Calculate, "tool_zakat", Color(0xFF6A1B9A)),
-        QuickToolItem("Nearby Mosque", "নিকটস্থ মসজিদ", Icons.Default.Mosque, "tool_mosques", Color(0xFFD84315))
-    )
+    val tools = remember(isBangla) {
+        listOf(
+            QuickToolItem("99 Names of Allah", "আল্লাহর ৯৯ নাম", Icons.Default.AutoAwesome, "tool_allah_names", IslamicGoldDark),
+            QuickToolItem("Qibla Finder", "কিবলা কম্পাস", Icons.Default.Explore, "tool_qibla", IslamicEmeraldPrimary),
+            QuickToolItem("Tasbih", "ডিজিটাল তাসবিহ", Icons.Default.TouchApp, "tool_tasbih", IslamicGoldDark),
+            QuickToolItem("Prayer Tracker", "নামাজ ট্র্যাকার", Icons.AutoMirrored.Filled.FactCheck, "tool_tracker", Color(0xFF2E7D32)),
+            QuickToolItem("Calendar", "ক্যালেন্ডার", Icons.Default.CalendarMonth, "calendar", Color(0xFF00838F)),
+            QuickToolItem("Zakat Calculator", "যাকাত ক্যালকুলেটর", Icons.Default.Calculate, "tool_zakat", Color(0xFF6A1B9A))
+        )
+    }
 
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         for (i in tools.indices step 3) {

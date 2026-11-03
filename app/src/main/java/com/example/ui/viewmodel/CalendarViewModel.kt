@@ -53,16 +53,17 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
         settingsRepo.settingsFlow
     ) { month, selected, location, settings ->
 
-        val days = generateDaysForMonth(month, selected)
         val holidaysYear = CalendarEngine.getBangladeshHolidaysForYear(month.year)
+        val holidayMap = holidaysYear.associateBy { it.date }
         val holidaysMonth = holidaysYear.filter { it.date.year == month.year && it.date.monthValue == month.monthValue }
+        val days = generateDaysForMonth(month, selected, holidayMap)
 
         val today = LocalDate.now()
         val hijriSelected = CalendarEngine.gregorianToHijri(selected)
         val banglaSelected = CalendarEngine.gregorianToBangla(selected)
         val hijriToday = CalendarEngine.gregorianToHijri(today)
         val banglaToday = CalendarEngine.gregorianToBangla(today)
-        val holidaySelected = holidaysYear.firstOrNull { it.date.isEqual(selected) }
+        val holidaySelected = holidayMap[selected]
         val eventSelected = CalendarEngine.ISLAMIC_EVENTS.firstOrNull {
             it.hijriMonth == hijriSelected.month && it.hijriDay == hijriSelected.day
         }
@@ -105,16 +106,18 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    private fun generateDaysForMonth(month: YearMonth, selectedDate: LocalDate): List<CalendarDayItem> {
-        val list = mutableListOf<CalendarDayItem>()
+    private fun generateDaysForMonth(
+        month: YearMonth,
+        selectedDate: LocalDate,
+        holidayMap: Map<LocalDate, BangladeshHoliday>
+    ): List<CalendarDayItem> {
+        val list = ArrayList<CalendarDayItem>(42)
         val firstDayOfMonth = month.atDay(1)
         val today = LocalDate.now()
-        val holidays = CalendarEngine.getBangladeshHolidaysForYear(month.year)
 
-        // Sunday = 7, Monday = 1 (Java DayOfWeek). Let's start week with Saturday / Sunday.
-        // In Bangladesh, the work week starts Sunday, Friday & Saturday are weekends.
-        // Let's standard start grid on Sunday (0..6)
-        val firstDayOfWeekIndex = firstDayOfMonth.dayOfWeek.value % 7 // Sunday = 0, Monday = 1, Sat = 6
+        val eventsMap = CalendarEngine.ISLAMIC_EVENTS.associateBy { Pair(it.hijriMonth, it.hijriDay) }
+
+        val firstDayOfWeekIndex = firstDayOfMonth.dayOfWeek.value % 7
 
         // Previous month padding
         val prevMonth = month.minusMonths(1)
@@ -123,30 +126,31 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
             val d = prevMonth.atDay(daysInPrevMonth - i)
             val h = CalendarEngine.gregorianToHijri(d)
             val b = CalendarEngine.gregorianToBangla(d)
-            val hol = holidays.firstOrNull { it.date.isEqual(d) }
-            val evt = CalendarEngine.ISLAMIC_EVENTS.firstOrNull { it.hijriMonth == h.month && it.hijriDay == h.day }
+            val hol = holidayMap[d]
+            val evt = eventsMap[Pair(h.month, h.day)]
             list.add(CalendarDayItem(d, isCurrentMonth = false, isToday = d.isEqual(today), isSelected = d.isEqual(selectedDate), hijriDate = h, banglaDate = b, holiday = hol, islamicEvent = evt))
         }
 
         // Current month days
-        for (dayNum in 1..month.lengthOfMonth()) {
+        val lengthOfCurrentMonth = month.lengthOfMonth()
+        for (dayNum in 1..lengthOfCurrentMonth) {
             val d = month.atDay(dayNum)
             val h = CalendarEngine.gregorianToHijri(d)
             val b = CalendarEngine.gregorianToBangla(d)
-            val hol = holidays.firstOrNull { it.date.isEqual(d) }
-            val evt = CalendarEngine.ISLAMIC_EVENTS.firstOrNull { it.hijriMonth == h.month && it.hijriDay == h.day }
+            val hol = holidayMap[d]
+            val evt = eventsMap[Pair(h.month, h.day)]
             list.add(CalendarDayItem(d, isCurrentMonth = true, isToday = d.isEqual(today), isSelected = d.isEqual(selectedDate), hijriDate = h, banglaDate = b, holiday = hol, islamicEvent = evt))
         }
 
-        // Next month padding to fill up to complete weeks (multiple of 7)
+        // Next month padding to fill up to complete weeks
         var nextMonthDay = 1
         val nextMonth = month.plusMonths(1)
         while (list.size % 7 != 0 || list.size < 35) {
             val d = nextMonth.atDay(nextMonthDay++)
             val h = CalendarEngine.gregorianToHijri(d)
             val b = CalendarEngine.gregorianToBangla(d)
-            val hol = holidays.firstOrNull { it.date.isEqual(d) }
-            val evt = CalendarEngine.ISLAMIC_EVENTS.firstOrNull { it.hijriMonth == h.month && it.hijriDay == h.day }
+            val hol = holidayMap[d]
+            val evt = eventsMap[Pair(h.month, h.day)]
             list.add(CalendarDayItem(d, isCurrentMonth = false, isToday = d.isEqual(today), isSelected = d.isEqual(selectedDate), hijriDate = h, banglaDate = b, holiday = hol, islamicEvent = evt))
         }
 

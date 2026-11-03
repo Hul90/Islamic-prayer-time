@@ -40,35 +40,6 @@ data class TasbihUiState(
     val presets: List<DhikrPreset> = DhikrPreset.PRESETS
 )
 
-data class ZakatCalculatorState(
-    val cashInHand: Double = 0.0,
-    val bankSavings: Double = 0.0,
-    val goldGrams: Double = 0.0,
-    val goldPricePerGram: Double = 10500.0, // Standard approximate BDT per gram (22k gold in Bangladesh)
-    val silverGrams: Double = 0.0,
-    val silverPricePerGram: Double = 180.0, // Standard approximate BDT per gram
-    val businessGoods: Double = 0.0,
-    val investments: Double = 0.0,
-    val debtsOwed: Double = 0.0,
-    val expensesDue: Double = 0.0,
-    val nisabThresholdBDT: Double = 87.48 * 10500.0 * 0.85 // ~7.5 tola gold threshold
-) {
-    val totalAssets: Double
-        get() = cashInHand + bankSavings + (goldGrams * goldPricePerGram) + (silverGrams * silverPricePerGram) + businessGoods + investments
-
-    val totalLiabilities: Double
-        get() = debtsOwed + expensesDue
-
-    val netZakatEligibleWealth: Double
-        get() = (totalAssets - totalLiabilities).coerceAtLeast(0.0)
-
-    val isZakatPayable: Boolean
-        get() = netZakatEligibleWealth >= nisabThresholdBDT
-
-    val zakatPayableAmount: Double
-        get() = if (isZakatPayable) netZakatEligibleWealth * 0.025 else 0.0
-}
-
 data class DateConverterState(
     val inputGregorian: LocalDate = LocalDate.now(),
     val convertedHijri: IslamicDate = CalendarEngine.gregorianToHijri(LocalDate.now()),
@@ -82,7 +53,13 @@ class SultanToolsViewModel(application: Application) : AndroidViewModel(applicat
     private val settingsRepo = app.settingsRepository
 
     private val sensorManager = application.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    private val vibrator = application.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+    private val vibrator: Vibrator? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val vibratorManager = application.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? android.os.VibratorManager
+        vibratorManager?.defaultVibrator
+    } else {
+        @Suppress("DEPRECATION")
+        application.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+    }
 
     private val accelerometerReading = FloatArray(3)
     private val magnetometerReading = FloatArray(3)
@@ -180,7 +157,19 @@ class SultanToolsViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    private var lastHeadingTime = 0L
+    private var lastEmittedHeading = 0f
+
     private fun updateHeading(heading: Float) {
+        val now = System.currentTimeMillis()
+        val headingDiff = abs(heading - lastEmittedHeading)
+        // Throttle sensor updates to smooth ~30fps and eliminate sensor jitter below 0.5 degrees
+        if (now - lastHeadingTime < 30L && headingDiff < 0.5f) {
+            return
+        }
+        lastHeadingTime = now
+        lastEmittedHeading = heading
+
         val qiblaBearing = _qiblaState.value.qiblaBearing
         val diff = abs(heading - qiblaBearing)
         val isAligned = diff < 3.0 || diff > 357.0
@@ -324,17 +313,43 @@ class SultanToolsViewModel(application: Application) : AndroidViewModel(applicat
         business: Double = _zakatState.value.businessGoods,
         investments: Double = _zakatState.value.investments,
         debts: Double = _zakatState.value.debtsOwed,
-        expenses: Double = _zakatState.value.expensesDue
+        expenses: Double = _zakatState.value.expensesDue,
+        goldPrice: Double = _zakatState.value.goldPricePerGram,
+        silverPrice: Double = _zakatState.value.silverPricePerGram,
+        nisabStandard: ZakatNisabStandard = _zakatState.value.nisabStandard
     ) {
         _zakatState.value = _zakatState.value.copy(
-            cashInHand = cash,
-            bankSavings = savings,
-            goldGrams = gold,
-            silverGrams = silver,
-            businessGoods = business,
-            investments = investments,
-            debtsOwed = debts,
-            expensesDue = expenses
+            cashInHand = cash.coerceAtLeast(0.0),
+            bankSavings = savings.coerceAtLeast(0.0),
+            goldGrams = gold.coerceAtLeast(0.0),
+            silverGrams = silver.coerceAtLeast(0.0),
+            businessGoods = business.coerceAtLeast(0.0),
+            investments = investments.coerceAtLeast(0.0),
+            debtsOwed = debts.coerceAtLeast(0.0),
+            expensesDue = expenses.coerceAtLeast(0.0),
+            goldPricePerGram = goldPrice.coerceAtLeast(0.0),
+            silverPricePerGram = silverPrice.coerceAtLeast(0.0),
+            nisabStandard = nisabStandard
+        )
+    }
+
+    fun setZakatNisabStandard(standard: ZakatNisabStandard) {
+        _zakatState.value = _zakatState.value.copy(nisabStandard = standard)
+    }
+
+    fun setGoldPricePerGram(price: Double) {
+        _zakatState.value = _zakatState.value.copy(goldPricePerGram = price.coerceAtLeast(0.0))
+    }
+
+    fun setSilverPricePerGram(price: Double) {
+        _zakatState.value = _zakatState.value.copy(silverPricePerGram = price.coerceAtLeast(0.0))
+    }
+
+    fun resetZakatCalculator() {
+        _zakatState.value = ZakatCalculatorState(
+            goldPricePerGram = _zakatState.value.goldPricePerGram,
+            silverPricePerGram = _zakatState.value.silverPricePerGram,
+            nisabStandard = _zakatState.value.nisabStandard
         )
     }
 

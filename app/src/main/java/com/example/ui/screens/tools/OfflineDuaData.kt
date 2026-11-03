@@ -13,22 +13,31 @@ fun cleanDuaTitle(rawTitle: String): String {
         .trim()
 }
 
+private var cachedOfflineDuas: List<OfflineDuaItem>? = null
+
 fun loadOfflineDuas(context: Context): List<OfflineDuaItem> {
-    val json = context.assets.open("dua_offline/dua_data.json").bufferedReader(Charsets.UTF_8).use { it.readText() }
-    val array = JSONArray(json)
-    return buildList(array.length()) {
-        for (i in 0 until array.length()) {
-            val obj = array.getJSONObject(i)
-            val blocksJson = obj.getJSONArray("blocks")
-            val blocks = buildList(blocksJson.length()) {
-                for (j in 0 until blocksJson.length()) {
-                    val block = blocksJson.getJSONObject(j)
-                    add(OfflineDuaBlock(block.getString("type"), block.getString("text")))
+    cachedOfflineDuas?.let { return it }
+    return synchronized(OfflineDuaBlock::class.java) {
+        cachedOfflineDuas ?: run {
+            val json = context.assets.open("dua_offline/dua_data.json").bufferedReader(Charsets.UTF_8).use { it.readText() }
+            val array = JSONArray(json)
+            val list = buildList(array.length()) {
+                for (i in 0 until array.length()) {
+                    val obj = array.getJSONObject(i)
+                    val blocksJson = obj.getJSONArray("blocks")
+                    val blocks = buildList(blocksJson.length()) {
+                        for (j in 0 until blocksJson.length()) {
+                            val block = blocksJson.getJSONObject(j)
+                            add(OfflineDuaBlock(block.getString("type"), block.getString("text")))
+                        }
+                    }
+                    val rawTitle = obj.getString("title")
+                    val cleanedTitle = cleanDuaTitle(rawTitle).ifEmpty { rawTitle }
+                    add(OfflineDuaItem(obj.getInt("id"), cleanedTitle, obj.getString("asset"), blocks))
                 }
             }
-            val rawTitle = obj.getString("title")
-            val cleanedTitle = cleanDuaTitle(rawTitle).ifEmpty { rawTitle }
-            add(OfflineDuaItem(obj.getInt("id"), cleanedTitle, obj.getString("asset"), blocks))
+            cachedOfflineDuas = list
+            list
         }
     }
 }
