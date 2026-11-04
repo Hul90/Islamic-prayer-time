@@ -14,6 +14,7 @@ import android.os.IBinder
 import android.os.Looper
 import androidx.core.app.NotificationCompat
 import com.example.MainActivity
+import com.example.R
 import com.example.model.PrayerType
 import com.example.notification.PrayerNotificationManager
 import com.example.receiver.PrayerAlarmReceiver
@@ -172,12 +173,7 @@ class AzanAudioService : Service() {
         stopPlayerOnly()
 
         // Fajr -> 002 azan, Others -> 001 azan
-        val resourceName = if (prayerType == PrayerType.FAJR) "azan_002" else "azan_001"
-        val resourceId = resources.getIdentifier(resourceName, "raw", packageName)
-        if (resourceId == 0) {
-            stopPlaybackAndService()
-            return
-        }
+        val resourceId = if (prayerType == PrayerType.FAJR) R.raw.azan_002 else R.raw.azan_001
 
         try {
             val player = MediaPlayer()
